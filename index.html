@@ -2,10 +2,13 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>老Xh</title>
+<title>欢迎光临</title>
+
+<!-- 大字字体：站酷快乐体 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -32,31 +35,15 @@
     color: #f2ead8;
   }
 
+  /* 顶部蓝色矩形：顶点 (-720,450)(720,450)(-720,420)(720,420) */
   .topbar {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    height: 30px;
+    height: 30px;              /* 450 - 420 = 30 */
     background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 50%, #1e3a8a 100%);
     box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
-    opacity: 0.8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .topbar a {
-    color: #ffffff;
-    text-decoration: none;
-    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 15px;
-    letter-spacing: 0.18em;
-    transition: color 0.2s ease;
-  }
-
-  .topbar a:hover {
-    color: #60a5fa;
   }
 
   .at {
@@ -66,6 +53,7 @@
     transform: translate(-50%, -50%);
   }
 
+  /* 大字：可爱圆润的站酷快乐体 */
   .title {
     --x: 50px;
     --y: 80px;
@@ -79,11 +67,12 @@
     text-shadow: 0 0 24px rgba(255, 220, 150, .25);
   }
 
+  /* 小字：宋体，中心和大字对齐 */
   .subtitle {
     --x: 50px;
     --y: -55px;
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 62px;
+    font-size: 48px;           /* 这里从 62px 改成了 48px */
     line-height: 1.2;
     white-space: nowrap;
     letter-spacing: 0.02em;
@@ -93,14 +82,12 @@
 </head>
 <body>
   <div class="stage">
-    <div class="topbar">
-      <a href="page2.html">关于我们</a>
-    </div>
+    <div class="topbar"></div>
 
     <div class="at title">
       <span>欢</span><span>迎</span><span>光</span><span>临</span>
     </div>
-    <div class="at subtitle">Happy new year</div>
+    <div class="at subtitle">天长地久有时尽，此别绵绵无绝期</div>
   </div>
 </body>
 </html>

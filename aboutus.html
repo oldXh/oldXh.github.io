@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy New Year</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0d0d1a;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: clamp(24px, 9vw, 120px);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
+    white-space: nowrap;
+    background: linear-gradient(90deg, #ff6ec4, #7873f5, #4ade80, #facc15, #ff6ec4);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: slide 6s linear infinite;
+  }
+  @keyframes slide {
+    to { background-position: -300% 0; }
+  }
+</style>
+</head>
+<body>
+  <h1>happynewyear</h1>
+</body>
+</html>

@@ -41,6 +41,22 @@
     background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 50%, #1e3a8a 100%);
     box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
     opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .topbar a {
+    color: #e8ecf5;
+    text-decoration: none;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    transition: color 0.2s ease;
+  }
+
+  .topbar a:hover {
+    color: #60a5fa;
   }
 
   .at {
@@ -77,7 +93,9 @@
 </head>
 <body>
   <div class="stage">
-    <div class="topbar"></div>
+    <div class="topbar">
+      <a href="aboutus.html">关于我们</a>
+    </div>
 
     <div class="at title">
       <span>欢</span><span>迎</span><span>光</span><span>临</span>

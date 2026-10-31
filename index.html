@@ -1,11 +1,76 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>我的第一个网页</title>
+<meta charset="UTF-8">
+<title>欢迎光临</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #0f0f10;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+  }
+
+  /* 固定 1440×900 的画布，正中间就是坐标原点 (0,0) */
+  .stage {
+    position: relative;
+    width: 1440px;
+    height: 900px;
+    flex: 0 0 auto;
+    background: radial-gradient(circle at 50% 50%, #1c1c20, #0b0b0d 70%);
+    overflow: hidden;
+    font-family: "Songti SC", "STSong", "SimSun", serif;
+    color: #f2ead8;
+  }
+
+  /* 通用：把元素中心放到坐标 (x, y) 上 */
+  .at {
+    position: absolute;
+    left: calc(50% + var(--x, 0px));
+    top:  calc(50% - var(--y, 0px));
+    transform: translate(-50%, -50%);
+  }
+
+  /* 大字：中心 x=50，宽 556，字间距自动撑满 */
+  .title {
+    --x: 50px;
+    --y: 80px;
+    width: 556px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 112px;
+    line-height: 1;
+    font-weight: 700;
+    white-space: nowrap;
+    text-shadow: 0 0 24px rgba(255, 220, 150, .25);
+  }
+
+  /* 小字：中心 x=-100，字号 = 112 × 0.618 ≈ 69 */
+  .subtitle {
+    --x: -100px;
+    --y: -55px;
+    font-size: 69px;
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    color: #cdbf9e;
+  }
+</style>
 </head>
 <body>
-  <h1>你好，这是我的第一个网页</h1>
-  <p>它已经通过 GitHub Pages 上线了。</p>
+  <div class="stage">
+    <div class="at title">
+      <span>欢</span><span>迎</span><span>光</span><span>临</span>
+    </div>
+    <div class="at subtitle">天长地久有时尽，此别绵绵无绝期</div>
+  </div>
 </body>
 </html>

@@ -2,13 +2,10 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>你猜？！</title>
-
-<!-- 大字字体：站酷快乐体 -->
+<title>欢迎光临</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -35,24 +32,20 @@
     color: #f2ead8;
   }
 
-  /* 顶部蓝色矩形 */
   .topbar {
     position: absolute;
     left: 0;
-    top: 0;
+    top: 30px;    /* 把这里从 0 改成了 30px，整体就往下移了 */
     width: 100%;
     height: 30px;
-    /* 背景色用 rgba 保留 80% 透明度，这样不会影响文字的纯白 */
     background: linear-gradient(90deg, rgba(30,58,138,0.8) 0%, rgba(37,99,235,0.8) 50%, rgba(30,58,138,0.8) 100%);
     box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
-    /* 让里面的文字绝对居中 */
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
   }
 
-  /* 关于我们 超链接样式 */
   .topbar a {
     color: #ffffff;
     text-decoration: none;
@@ -60,11 +53,9 @@
     font-size: 15px;
     letter-spacing: 0.15em;
     display: inline-block;
-    /* 添加平滑过渡效果 */
     transition: transform 0.2s ease; 
   }
 
-  /* 鼠标悬停时略微放大 */
   .topbar a:hover {
     transform: scale(1.15);
   }
@@ -76,7 +67,6 @@
     transform: translate(-50%, -50%);
   }
 
-  /* 大字：可爱圆润的站酷快乐体 */
   .title {
     --x: 50px;
     --y: 80px;
@@ -90,7 +80,6 @@
     text-shadow: 0 0 24px rgba(255, 220, 150, .25);
   }
 
-  /* 小字：宋体，中心和大字对齐 */
   .subtitle {
     --x: 50px;
     --y: -55px;
@@ -105,7 +94,6 @@
 </head>
 <body>
   <div class="stage">
-    <!-- 这次文字加进来了，并指向了 aboutus.html -->
     <div class="topbar">
       <a href="aboutus.html">关于我们</a>
     </div>

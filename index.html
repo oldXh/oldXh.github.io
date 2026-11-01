@@ -35,15 +35,38 @@
     color: #f2ead8;
   }
 
-  /* 顶部蓝色矩形：顶点 (-720,450)(720,450)(-720,420)(720,420) */
+  /* 顶部蓝色矩形 */
   .topbar {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    height: 30px;              /* 450 - 420 = 30 */
-    background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 50%, #1e3a8a 100%);
+    height: 30px;
+    /* 背景色用 rgba 保留 80% 透明度，这样不会影响文字的纯白 */
+    background: linear-gradient(90deg, rgba(30,58,138,0.8) 0%, rgba(37,99,235,0.8) 50%, rgba(30,58,138,0.8) 100%);
     box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
+    /* 让里面的文字绝对居中 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  /* 关于我们 超链接样式 */
+  .topbar a {
+    color: #ffffff;
+    text-decoration: none;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    display: inline-block;
+    /* 添加平滑过渡效果 */
+    transition: transform 0.2s ease; 
+  }
+
+  /* 鼠标悬停时略微放大 */
+  .topbar a:hover {
+    transform: scale(1.15);
   }
 
   .at {
@@ -72,7 +95,7 @@
     --x: 50px;
     --y: -55px;
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 48px;           /* 这里从 62px 改成了 48px */
+    font-size: 48px;
     line-height: 1.2;
     white-space: nowrap;
     letter-spacing: 0.02em;
@@ -82,7 +105,10 @@
 </head>
 <body>
   <div class="stage">
-    <div class="topbar"></div>
+    <!-- 这次文字加进来了，并指向了 aboutus.html -->
+    <div class="topbar">
+      <a href="aboutus.html">关于我们</a>
+    </div>
 
     <div class="at title">
       <span>欢</span><span>迎</span><span>光</span><span>临</span>

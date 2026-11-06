@@ -1,1 +1,171 @@
 
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vicetone 音频库</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #ffffff;
+    color: #e53935;
+    padding: 30px 20px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-box {
+    width: 100%;
+    max-width: 650px;
+    margin-bottom: 30px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 18px;
+    border: 2px solid #e53935;
+    border-radius: 8px;
+    outline: none;
+    color: #e53935;
+    background: #fff;
+  }
+  .search-box input::placeholder { color: #ff8a80; }
+  .search-box input:focus { box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.2); }
+
+  .audio-list {
+    width: 100%;
+    max-width: 650px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .audio-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    padding: 14px 10px;
+    border-bottom: 1px dashed #ffcdd2;
+    font-size: 22px;
+  }
+  .audio-item.hidden { display: none; }
+
+  .audio-name { font-weight: 500; }
+
+  .audio-actions { display: flex; gap: 18px; margin-left: auto; }
+
+  .btn-link {
+    color: #e53935;
+    text-decoration: none;
+    font-size: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+  }
+  .btn-link:hover { text-decoration: underline; }
+
+  .empty-tip {
+    display: none;
+    color: #ff8a80;
+    font-size: 18px;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  /* 移动端略微缩小字号 */
+  @media (max-width: 480px) {
+    .audio-item { font-size: 18px; gap: 8px 16px; }
+    .btn-link { font-size: 17px; }
+    .search-box input { font-size: 16px; padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索音频名称（例如：Ensemble）...">
+  </div>
+
+  <ul class="audio-list" id="audioList">
+    <!-- 示例曲目 1 -->
+    <li class="audio-item" data-name="Vicetone - Ensemble (Original Mix)">
+      <span class="audio-name">1. Vicetone - Ensemble (Original Mix)</span>
+      <div class="audio-actions">
+        <button class="btn-link" onclick="playAudio('ensemble')">(收听)</button>
+        <a class="btn-link" href="http://up.yuedisk.com/wl/url/qJeEk5c6cp/204318/yuedisk.mp3" download>下载</a>
+      </div>
+      <!-- 隐藏的音频播放器 -->
+      <audio id="audio-ensemble" src="http://up.yuedisk.com/wl/url/qJeEk5c6cp/204318/yuedisk.mp3" preload="none"></audio>
+    </li>
+
+    <!-- 示例曲目 2 -->
+    <li class="audio-item" data-name="Vicetone - Over Too Soon">
+      <span class="audio-name">2. Vicetone - Over Too Soon</span>
+      <div class="audio-actions">
+        <a class="btn-link" href="https://djs.od.ua/track/6045-vicetone_over_too_soon" target="_blank" rel="noopener">(收听)</a>
+        <a class="btn-link" href="https://djs.od.ua/track/6045-vicetone_over_too_soon" target="_blank" rel="noopener">下载</a>
+      </div>
+    </li>
+
+    <!-- 你可以在这里继续添加更多音频条目 -->
+    <!-- <li class="audio-item" data-name="Vicetone - 歌曲名"> ... </li> -->
+  </ul>
+
+  <p class="empty-tip" id="emptyTip">没有找到匹配的音频，换个关键词试试～</p>
+
+<script>
+  // 搜索过滤
+  const searchInput = document.getElementById('searchInput');
+  const audioList = document.getElementById('audioList');
+  const emptyTip = document.getElementById('emptyTip');
+  const items = Array.from(audioList.querySelectorAll('.audio-item'));
+
+  searchInput.addEventListener('input', function () {
+    const keyword = this.value.trim().toLowerCase();
+    let visibleCount = 0;
+
+    items.forEach(item => {
+      const name = (item.getAttribute('data-name') || '').toLowerCase();
+      if (name.includes(keyword)) {
+        item.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+
+    emptyTip.style.display = visibleCount === 0 ? 'block' : 'none';
+  });
+
+  // 试听（播放/暂停切换）
+  function playAudio(id) {
+    const audio = document.getElementById('audio-' + id);
+    if (!audio) return;
+
+    // 暂停其他可能正在播放的音频
+    document.querySelectorAll('audio').forEach(a => {
+      if (a !== audio) { a.pause(); a.currentTime = 0; }
+    });
+
+    if (audio.paused) {
+      audio.play().catch(err => {
+        alert('无法直接播放，可能是链接失效或浏览器拦截。你可以点击“下载”保存后本地播放。');
+      });
+    } else {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }
+</script>
+
+</body>
+</html>

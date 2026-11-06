@@ -60,6 +60,11 @@
     transform: scale(1.15);
   }
 
+  /* 增加一个间距样式，避免两个链接紧挨在一起 */
+  .topbar a:first-child {
+    margin-right: 40px; 
+  }
+
   .at {
     position: absolute;
     left: calc(50% + var(--x, 0px));
@@ -95,6 +100,9 @@
 <body>
   <div class="stage">
     <div class="topbar">
+      <!-- 新增的下载链接 -->
+      <a href="download.html">下载📥</a>
+      <!-- 原有的公告链接 -->
       <a href="aboutus.html">公告📢</a>
     </div>
 

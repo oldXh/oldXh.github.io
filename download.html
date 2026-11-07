@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vicetone 音频库</title>
+<title>资源库</title>
 <!-- 引入更好看的字体 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,11 +13,9 @@
   * { box-sizing: border-box; }
   
   body {
-    /* 使用新引入的现代无衬线字体 */
     font-family: "Outfit", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-    /* 与 index.html 同款的黑色径向渐变背景 */
     background: radial-gradient(circle at 50% 50%, #1c1c20, #0b0b0d 70%);
-    color: #f2ead8; /* 同款的淡金/暖白色文字 */
+    color: #f2ead8;
     padding: 30px 20px;
     margin: 0;
     display: flex;
@@ -32,7 +30,7 @@
     margin-bottom: 30px;
   }
   .nav-bar a {
-    color: #cdbf9e; /* 类似首页副标题的淡金色 */
+    color: #cdbf9e;
     text-decoration: none;
     font-size: 16px;
     transition: all 0.3s ease;
@@ -52,7 +50,6 @@
     width: 100%;
     padding: 16px 24px;
     font-size: 18px;
-    /* 半透明毛玻璃质感的搜索框 */
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
@@ -63,8 +60,8 @@
   }
   .search-box input::placeholder { color: rgba(255, 255, 255, 0.3); }
   .search-box input:focus { 
-    border-color: rgba(59, 130, 246, 0.8); /* 聚焦时变蓝 */
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); /* 蓝色光晕 */
+    border-color: rgba(59, 130, 246, 0.8);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
     background: rgba(255, 255, 255, 0.08);
   }
 
@@ -76,18 +73,19 @@
     margin: 0;
   }
 
+  /* 保持你原来的行内排版 */
   .audio-item {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 10px 24px;
     padding: 18px 10px;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.15); /* 调整为半透明暗色虚线 */
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
     font-size: 22px;
     transition: background-color 0.3s;
   }
   .audio-item:hover {
-    background: rgba(255, 255, 255, 0.03); /* 鼠标悬停时微微提亮背景 */
+    background: rgba(255, 255, 255, 0.03);
   }
   .audio-item.hidden { display: none; }
 
@@ -99,7 +97,7 @@
   .audio-actions { display: flex; gap: 24px; margin-left: auto; }
 
   .btn-link {
-    color: #60a5fa; /* 替换刺眼的红色，使用科技感亮蓝色 */
+    color: #60a5fa;
     text-decoration: none;
     font-size: 20px;
     cursor: pointer;
@@ -112,7 +110,20 @@
   }
   .btn-link:hover { 
     color: #93c5fd;
-    text-shadow: 0 0 10px rgba(147, 197, 253, 0.6); /* 悬停发光 */
+    text-shadow: 0 0 10px rgba(147, 197, 253, 0.6);
+  }
+
+  /* 用来存放展开的视频 */
+  .video-wrapper {
+    display: none;
+    width: 100%;
+    margin-top: 15px;
+  }
+  
+  .video-wrapper video {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
   }
 
   .empty-tip {
@@ -137,32 +148,35 @@
   </div>
 
   <div class="search-box">
-    <input type="text" id="searchInput" placeholder="搜索音频名称（例如：Ensemble）...">
+    <input type="text" id="searchInput" placeholder="搜索内容（例如：wzy、吉他、Vicetone）...">
   </div>
 
   <ul class="audio-list" id="audioList">
-    <!-- 示例曲目 1 -->
-    <li class="audio-item" data-name="Vicetone - Ensemble (Original Mix)">
-      <span class="audio-name">1. Vicetone - Ensemble (Original Mix)</span>
+    <!-- 第 1 项：替换为视频 -->
+    <li class="audio-item" data-name="wzy弹吉他">
+      <span class="audio-name">1. wzy弹吉他</span>
       <div class="audio-actions">
-        <button class="btn-link" onclick="playAudio('ensemble')">(收听)</button>
-        <button class="btn-link" onclick="downloadPlaceholder()">下载</button>
+        <!-- 点击触发展开/收起函数 -->
+        <button class="btn-link" onclick="toggleVideo('wzy', this)">(观看)</button>
       </div>
-      <!-- 隐藏的音频播放器 -->
-      <audio id="audio-ensemble" src="http://up.yuedisk.com/wl/url/qJeEk5c6cp/204318/yuedisk.mp3" preload="none"></audio>
+      
+      <!-- 视频隐藏框（注意：因为外面是 flex 布局，设置 width: 100% 会让它自动掉到下一行显示） -->
+      <div class="video-wrapper" id="wrapper-wzy">
+        <!-- 💡【你需要修改的地方】💡 如果你上传的视频叫别的名字，请把 "wzy.mp4" 改成你的名字 -->
+        <video id="video-wzy" src="0bcb4b8b3a3fa8d1cce10168a370317c.mp4" controls preload="none"></video>
+      </div>
     </li>
 
-    <!-- 示例曲目 2 -->
+    <!-- 第 2 项：保留原来的音频示例（如果你不需要可以删掉） -->
     <li class="audio-item" data-name="Vicetone - Over Too Soon">
       <span class="audio-name">2. Vicetone - Over Too Soon</span>
       <div class="audio-actions">
         <a class="btn-link" href="https://djs.od.ua/track/6045-vicetone_over_too_soon" target="_blank" rel="noopener">(收听)</a>
-        <button class="btn-link" onclick="downloadPlaceholder()">下载</button>
       </div>
     </li>
   </ul>
 
-  <p class="empty-tip" id="emptyTip">没有找到匹配的音频，换个关键词试试～</p>
+  <p class="empty-tip" id="emptyTip">没有找到匹配的内容，换个关键词试试～</p>
 
 <script>
   // 搜索过滤
@@ -188,28 +202,22 @@
     emptyTip.style.display = visibleCount === 0 ? 'block' : 'none';
   });
 
-  // 试听（播放/暂停切换）
-  function playAudio(id) {
-    const audio = document.getElementById('audio-' + id);
-    if (!audio) return;
+  // 视频观看/收起逻辑
+  function toggleVideo(id, btn) {
+    const wrapper = document.getElementById('wrapper-' + id);
+    const video = document.getElementById('video-' + id);
 
-    document.querySelectorAll('audio').forEach(a => {
-      if (a !== audio) { a.pause(); a.currentTime = 0; }
-    });
-
-    if (audio.paused) {
-      audio.play().catch(err => {
-        alert('无法直接播放，可能是链接失效或浏览器拦截。你可以尝试替换音频链接。');
-      });
+    if (wrapper.style.display === 'none' || wrapper.style.display === '') {
+      wrapper.style.display = 'block';
+      // 尝试播放（如果浏览器拦截，用户点视频里的播放键即可）
+      video.play().catch(e => console.log('等待用户手动播放'));
+      btn.textContent = '(收起)';
     } else {
-      audio.pause();
-      audio.currentTime = 0;
+      wrapper.style.display = 'none';
+      video.pause();
+      video.currentTime = 0;
+      btn.textContent = '(观看)';
     }
-  }
-
-  // 下载占位提示功能
-  function downloadPlaceholder() {
-    alert('下载功能暂未开放，敬请期待！(目前仅支持在线收听)');
   }
 </script>
 

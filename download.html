@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -17,6 +16,18 @@
     flex-direction: column;
     align-items: center;
   }
+
+  .nav-bar {
+    width: 100%;
+    max-width: 650px;
+    margin-bottom: 20px;
+  }
+  .nav-bar a {
+    color: #e53935;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  .nav-bar a:hover { text-decoration: underline; }
 
   .search-box {
     width: 100%;
@@ -60,6 +71,7 @@
 
   .audio-actions { display: flex; gap: 18px; margin-left: auto; }
 
+  /* 统一样式，让按钮和链接长得一样 */
   .btn-link {
     color: #e53935;
     text-decoration: none;
@@ -81,7 +93,6 @@
     text-align: center;
   }
 
-  /* 移动端略微缩小字号 */
   @media (max-width: 480px) {
     .audio-item { font-size: 18px; gap: 8px 16px; }
     .btn-link { font-size: 17px; }
@@ -90,6 +101,10 @@
 </style>
 </head>
 <body>
+
+  <div class="nav-bar">
+    <a href="index.html">← 返回首页</a>
+  </div>
 
   <div class="search-box">
     <input type="text" id="searchInput" placeholder="搜索音频名称（例如：Ensemble）...">
@@ -101,7 +116,8 @@
       <span class="audio-name">1. Vicetone - Ensemble (Original Mix)</span>
       <div class="audio-actions">
         <button class="btn-link" onclick="playAudio('ensemble')">(收听)</button>
-        <a class="btn-link" href="http://up.yuedisk.com/wl/url/qJeEk5c6cp/204318/yuedisk.mp3" download>下载</a>
+        <!-- 这里的下载变成了占位按钮，点击弹出提示 -->
+        <button class="btn-link" onclick="downloadPlaceholder()">下载</button>
       </div>
       <!-- 隐藏的音频播放器 -->
       <audio id="audio-ensemble" src="http://up.yuedisk.com/wl/url/qJeEk5c6cp/204318/yuedisk.mp3" preload="none"></audio>
@@ -112,12 +128,10 @@
       <span class="audio-name">2. Vicetone - Over Too Soon</span>
       <div class="audio-actions">
         <a class="btn-link" href="https://djs.od.ua/track/6045-vicetone_over_too_soon" target="_blank" rel="noopener">(收听)</a>
-        <a class="btn-link" href="https://djs.od.ua/track/6045-vicetone_over_too_soon" target="_blank" rel="noopener">下载</a>
+        <!-- 这里的下载变成了占位按钮，点击弹出提示 -->
+        <button class="btn-link" onclick="downloadPlaceholder()">下载</button>
       </div>
     </li>
-
-    <!-- 你可以在这里继续添加更多音频条目 -->
-    <!-- <li class="audio-item" data-name="Vicetone - 歌曲名"> ... </li> -->
   </ul>
 
   <p class="empty-tip" id="emptyTip">没有找到匹配的音频，换个关键词试试～</p>
@@ -151,19 +165,23 @@
     const audio = document.getElementById('audio-' + id);
     if (!audio) return;
 
-    // 暂停其他可能正在播放的音频
     document.querySelectorAll('audio').forEach(a => {
       if (a !== audio) { a.pause(); a.currentTime = 0; }
     });
 
     if (audio.paused) {
       audio.play().catch(err => {
-        alert('无法直接播放，可能是链接失效或浏览器拦截。你可以点击“下载”保存后本地播放。');
+        alert('无法直接播放，可能是链接失效或浏览器拦截。你可以尝试替换音频链接。');
       });
     } else {
       audio.pause();
       audio.currentTime = 0;
     }
+  }
+
+  // 下载占位提示功能
+  function downloadPlaceholder() {
+    alert('下载功能暂未开放，敬请期待！(目前仅支持在线收听)');
   }
 </script>
 

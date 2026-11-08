@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>资源库</title>
-<!-- 引入更好看的字体 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
   * { box-sizing: border-box; }
-  
+
   body {
     font-family: "Outfit", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
     background: radial-gradient(circle at 50% 50%, #1c1c20, #0b0b0d 70%);
@@ -35,7 +34,7 @@
     font-size: 16px;
     transition: all 0.3s ease;
   }
-  .nav-bar a:hover { 
+  .nav-bar a:hover {
     color: #ffffff;
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
   }
@@ -59,7 +58,7 @@
     transition: all 0.3s ease;
   }
   .search-box input::placeholder { color: rgba(255, 255, 255, 0.3); }
-  .search-box input:focus { 
+  .search-box input:focus {
     border-color: rgba(59, 130, 246, 0.8);
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
     background: rgba(255, 255, 255, 0.08);
@@ -73,7 +72,6 @@
     margin: 0;
   }
 
-  /* 保持你原来的行内排版 */
   .audio-item {
     display: flex;
     align-items: center;
@@ -89,8 +87,8 @@
   }
   .audio-item.hidden { display: none; }
 
-  .audio-name { 
-    font-weight: 500; 
+  .audio-name {
+    font-weight: 500;
     letter-spacing: 0.02em;
   }
 
@@ -108,22 +106,28 @@
     font-family: inherit;
     transition: all 0.3s ease;
   }
-  .btn-link:hover { 
+  .btn-link:hover {
     color: #93c5fd;
     text-shadow: 0 0 10px rgba(147, 197, 253, 0.6);
   }
 
-  /* 用来存放展开的视频 */
+  /* 用来存放展开的视频 / 音频 */
   .video-wrapper {
     display: none;
     width: 100%;
     margin-top: 15px;
   }
-  
+
   .video-wrapper video {
     width: 100%;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+
+  .video-wrapper audio {
+    width: 100%;
+    display: block;
+    border-radius: 8px;
   }
 
   .empty-tip {
@@ -148,32 +152,38 @@
   </div>
 
   <div class="search-box">
-    <input type="text" id="searchInput" placeholder="搜索内容（例如：wzy、吉他、Vicetone）...">
+    <input type="text" id="searchInput" placeholder="搜索内容（例如：wzy、吉他、love story）...">
   </div>
 
   <ul class="audio-list" id="audioList">
-    <!-- 第 1 项：替换为视频 -->
+
+    <!-- 第 1 项：视频 -->
     <li class="audio-item" data-name="wzy弹吉他">
       <span class="audio-name">1. wzy弹吉他</span>
       <div class="audio-actions">
-        <!-- 点击触发展开/收起函数 -->
         <button class="btn-link" onclick="toggleVideo('wzy', this)">(观看)</button>
+        <a class="btn-link" href="0bcb4b8b3a3fa8d1cce10168a370317c.mp4" download="wzy弹吉他.mp4">(下载)</a>
       </div>
-      
-      <!-- 视频隐藏框（注意：因为外面是 flex 布局，设置 width: 100% 会让它自动掉到下一行显示） -->
+
       <div class="video-wrapper" id="wrapper-wzy">
-        <!-- 💡【你需要修改的地方】💡 如果你上传的视频叫别的名字，请把 "wzy.mp4" 改成你的名字 -->
         <video id="video-wzy" src="0bcb4b8b3a3fa8d1cce10168a370317c.mp4" controls preload="none"></video>
       </div>
     </li>
 
-    <!-- 第 2 项：保留原来的音频示例（如果你不需要可以删掉） -->
-    <li class="audio-item" data-name="Vicetone - Over Too Soon">
-      <span class="audio-name">2. Vicetone - Over Too Soon</span>
+    <!-- 第 2 项：Love Story -->
+    <li class="audio-item" data-name="love story taylor swift 霉霉 爱情故事">
+      <span class="audio-name">2. Love Story</span>
       <div class="audio-actions">
-        <a class="btn-link" href="https://djs.od.ua/track/6045-vicetone_over_too_soon" target="_blank" rel="noopener">(收听)</a>
+        <button class="btn-link" onclick="toggleAudio('love', this)">(收听)</button>
+        <!-- 💡 如果你把 mp3 放在了子文件夹里，比如 audio/，就把下面两处 href/src 改成 audio/love%20story.mp3 -->
+        <a class="btn-link" href="love%20story.mp3" download="Love Story.mp3">(下载)</a>
+      </div>
+
+      <div class="video-wrapper" id="wrapper-love">
+        <audio id="audio-love" src="love%20story.mp3" controls preload="none"></audio>
       </div>
     </li>
+
   </ul>
 
   <p class="empty-tip" id="emptyTip">没有找到匹配的内容，换个关键词试试～</p>
@@ -202,14 +212,13 @@
     emptyTip.style.display = visibleCount === 0 ? 'block' : 'none';
   });
 
-  // 视频观看/收起逻辑
+  // 视频观看/收起
   function toggleVideo(id, btn) {
     const wrapper = document.getElementById('wrapper-' + id);
     const video = document.getElementById('video-' + id);
 
     if (wrapper.style.display === 'none' || wrapper.style.display === '') {
       wrapper.style.display = 'block';
-      // 尝试播放（如果浏览器拦截，用户点视频里的播放键即可）
       video.play().catch(e => console.log('等待用户手动播放'));
       btn.textContent = '(收起)';
     } else {
@@ -217,6 +226,23 @@
       video.pause();
       video.currentTime = 0;
       btn.textContent = '(观看)';
+    }
+  }
+
+  // 音频收听/收起
+  function toggleAudio(id, btn) {
+    const wrapper = document.getElementById('wrapper-' + id);
+    const audio = document.getElementById('audio-' + id);
+
+    if (wrapper.style.display === 'none' || wrapper.style.display === '') {
+      wrapper.style.display = 'block';
+      audio.play().catch(e => console.log('等待用户手动播放'));
+      btn.textContent = '(收起)';
+    } else {
+      wrapper.style.display = 'none';
+      audio.pause();
+      audio.currentTime = 0;
+      btn.textContent = '(收听)';
     }
   }
 </script>

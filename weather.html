@@ -50,7 +50,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100; /* 降低导航栏层级，确保被卡片盖住时不突兀 */
+    z-index: 100;
   }
 
   .topbar a {
@@ -93,22 +93,24 @@
   }
 
   /* 
-   * 核心布局：使用 8 列网格 
-   * 上排 4 个卡片，每个占 2 列（共 8 列）
-   * 下排 3 个卡片，每个占 2 列，从第 2 列开始偏移实现居中
+   * 核心布局修改：使用 Flexbox 替代 Grid 
+   * 强制换行，并让不满一行的元素居中
    */
   .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px 20px; /* 上下间距 24px，左右间距 20px */
     width: 100%;
     max-width: 960px;
     z-index: 1;
   }
 
-  /* 天气卡片基础样式 */
+  /* 天气卡片 */
   .weather-card {
-    grid-column: span 2; /* 默认占 2 列 */
+    /* 强制占 1/4 宽度减去间距，确保第一排必定是 4 个 */
+    flex: 0 0 calc(25% - 15px);
+    min-width: 160px; /* 防止极度缩小时变形 */
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 220, 150, 0.15);
     border-radius: 12px;
@@ -119,20 +121,15 @@
     transition: all 0.3s ease;
   }
 
-  /* 下排第一个卡片偏移 1 列，使得 3 个卡片居中 */
-  .weather-card:nth-child(5) {
-    grid-column: 2 / span 2;
-  }
-
   .weather-card:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 220, 150, 0.4);
     transform: translateY(-4px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 220, 150, 0.08);
-    z-index: 200; /* 悬停时最高层级 */
+    z-index: 200;
   }
 
-  /* 今天标签 */
+  /* 当前日高亮 */
   .weather-card.today {
     background: rgba(255, 220, 150, 0.06);
     border-color: rgba(255, 220, 150, 0.6);
@@ -263,26 +260,28 @@
     text-align: justify;
   }
 
-  /* --- 下排卡片（默认）：向上弹出 --- */
-  .weather-card:not(.tooltip-down) .tooltip {
+  /* --- 默认（下排）：向上弹出 --- */
+  .weather-card .tooltip {
     bottom: calc(100% + 16px);
     transform: translateX(-50%) translateY(10px);
   }
-  .weather-card:not(.tooltip-down) .tooltip::after {
+  .weather-card .tooltip::after {
     top: 100%;
     border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
   }
-  .weather-card:not(.tooltip-down):hover .tooltip {
+  .weather-card:hover .tooltip {
     transform: translateX(-50%) translateY(0);
   }
 
-  /* --- 上排卡片 (.tooltip-down)：向下弹出 --- */
+  /* --- 上排卡片 (.tooltip-down)：向下弹出，避开导航栏 --- */
   .weather-card.tooltip-down .tooltip {
     top: calc(100% + 16px);
+    bottom: auto;
     transform: translateX(-50%) translateY(-10px);
   }
   .weather-card.tooltip-down .tooltip::after {
     bottom: 100%;
+    top: auto;
     border-color: transparent transparent rgba(255, 220, 150, 0.35) transparent;
   }
   .weather-card.tooltip-down:hover .tooltip {
@@ -303,12 +302,11 @@
     text-decoration: none;
   }
 
-  /* 小屏幕适配：取消复杂网格，恢复普通流并统一向上弹出 */
+  /* 小屏幕适配 */
   @media (max-width: 860px) {
-    .calendar-grid { grid-template-columns: repeat(2, 1fr); max-width: 600px; }
-    .weather-card { grid-column: auto; } 
-    .weather-card:nth-child(5) { grid-column: auto; }
+    .weather-card { flex: 0 0 calc(33.33% - 14px); } /* 变成一排3个 */
     
+    /* 小屏幕下，由于换行逻辑变了，强制所有提示框向上弹出，防止乱飞 */
     .weather-card.tooltip-down .tooltip {
       top: auto;
       bottom: calc(100% + 16px);
@@ -324,8 +322,8 @@
     }
   }
 
-  @media (max-width: 480px) {
-    .calendar-grid { grid-template-columns: 1fr; }
+  @media (max-width: 600px) {
+    .weather-card { flex: 0 0 calc(50% - 10px); } /* 变成一排2个 */
     .weather-card { padding: 20px 8px; }
     .tooltip { width: 220px; left: 0; transform: translateX(0) translateY(10px) !important; }
     .tooltip::after { left: 30%; }
@@ -353,7 +351,6 @@
   const LAT = 31.19;
   const LON = 121.44;
 
-  // 天气代码映射表
   const weatherCodeMap = {
     0: { text: '晴', icon: '☀️' },
     1: { text: '大部晴朗', icon: '🌤️' },
@@ -388,7 +385,7 @@
       const isToday = index === 0;
       const codeInfo = weatherCodeMap[day.code] || { text: '未知', icon: '❓' };
       
-      // 核心逻辑：前 4 个（上排）向下弹，后 3 个（下排）默认向上弹
+      // 前 4 个卡片设为上排，工具提示向下弹；后 3 个为下排，向上弹
       const isTopRow = index < 4;
       const tooltipClass = isTopRow ? ' tooltip-down' : '';
 
@@ -433,7 +430,6 @@
       const weatherList = daily.time.map((timeStr, i) => {
         const d = new Date(timeStr);
         
-        // 风向转换
         const windDirDeg = daily.wind_direction_10m_dominant[i];
         let windDirText = '北风';
         if (windDirDeg >= 22.5 && windDirDeg < 67.5) windDirText = '东北风';
@@ -468,7 +464,6 @@
       renderCards(weatherList);
     } catch (error) {
       console.error('天气获取失败:', error);
-      // 接口失败时的备用数据
       const fallback = [
         { month: 11, day: 15, weekday: 0, code: 2, tempMax: 19, tempMin: 13, windDir: '北风', windSpeed: 15, humidity: 80, sunrise: '06:20', sunset: '16:56', uvIndex: '中等', tip: '备用数据：北风 15km/h，紫外线中等。' },
         { month: 11, day: 16, weekday: 1, code: 3, tempMax: 18, tempMin: 13, windDir: '东北风', windSpeed: 10, humidity: 75, sunrise: '06:21', sunset: '16:56', uvIndex: '较弱', tip: '备用数据：东北风 10km/h，紫外线较弱。' },

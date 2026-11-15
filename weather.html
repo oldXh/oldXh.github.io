@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天气预报 - 上海</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    min-height: 100vh;
+    background: #0f0f10;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 140px 20px 60px; /* 留出顶部导航栏的空间 */
+    position: relative;
+  }
+
+  /* 复刻首页的径向渐变背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, #1c1c20, #0b0b0d 70%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* 复刻首页的顶部导航栏 */
+  .topbar {
+    position: absolute;
+    left: 0;
+    top: 80px;
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(90deg, rgba(30,58,138,0.8) 0%, rgba(37,99,235,0.8) 50%, rgba(30,58,138,0.8) 100%);
+    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  .topbar a {
+    color: #ffffff;
+    text-decoration: none;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    display: inline-block;
+    transition: transform 0.2s ease; 
+  }
+
+  .topbar a:hover {
+    transform: scale(1.15);
+  }
+
+  /* 标题区域 */
+  .header {
+    text-align: center;
+    margin-bottom: 50px;
+    z-index: 1;
+  }
+
+  .header h1 {
+    font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
+    font-size: 46px;
+    font-weight: normal;
+    color: #f2ead8;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    text-shadow: 0 0 24px rgba(255, 220, 150, .25);
+  }
+
+  .header p {
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 16px;
+    color: #cdbf9e;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+  }
+
+  /* 日历网格 */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 1100px;
+    z-index: 1;
+  }
+
+  /* 天气卡片 */
+  .weather-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 220, 150, 0.15);
+    border-radius: 12px;
+    padding: 28px 16px;
+    text-align: center;
+    position: relative;
+    cursor: default;
+    transition: all 0.3s ease;
+  }
+
+  .weather-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 220, 150, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 220, 150, 0.08);
+  }
+
+  /* 当前日高亮 */
+  .weather-card.today {
+    background: rgba(255, 220, 150, 0.06);
+    border-color: rgba(255, 220, 150, 0.6);
+    box-shadow: 0 0 20px rgba(255, 220, 150, 0.1);
+  }
+  
+  .weather-card.today::before {
+    content: '今';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #cdbf9e;
+    color: #0f0f10;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 2px 12px;
+    border-radius: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  .card-date {
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 15px;
+    color: #cdbf9e;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .card-weekday {
+    font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
+    font-size: 20px;
+    color: #f2ead8;
+    margin-bottom: 18px;
+    letter-spacing: 0.05em;
+  }
+
+  .card-icon {
+    font-size: 44px;
+    line-height: 1;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 10px rgba(255, 220, 150, 0.2));
+  }
+
+  .card-temp {
+    font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
+    font-size: 28px;
+    color: #f2ead8;
+    letter-spacing: 0.02em;
+  }
+  
+  .card-temp span {
+    font-size: 16px;
+    color: rgba(205, 191, 158, 0.6);
+    margin-left: 4px;
+  }
+
+  .card-condition {
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 15px;
+    color: #cdbf9e;
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  /* 悬停详情弹窗 */
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: 240px;
+    background: rgba(15, 15, 16, 0.95);
+    border: 1px solid rgba(255, 220, 150, 0.35);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 220, 150, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+    pointer-events: none;
+    z-index: 50;
+    text-align: left;
+  }
+
+  /* 小三角指向 */
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
+  }
+
+  .weather-card:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .tooltip-title {
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #f2ead8;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed rgba(255, 220, 150, 0.2);
+    padding-bottom: 10px;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #f2ead8;
+  }
+  
+  .tooltip-row:last-child { margin-bottom: 0; }
+  
+  .tooltip-row span:first-child { 
+    color: #cdbf9e; 
+  }
+
+  .tooltip-tip {
+    margin-top: 12px; 
+    padding-top: 10px; 
+    border-top: 1px dashed rgba(255, 220, 150, 0.2); 
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 13px; 
+    color: #cdbf9e; 
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  /* 数据来源脚注 */
+  .source-tip {
+    margin-top: 50px;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 14px;
+    color: rgba(205, 191, 158, 0.4);
+    text-align: center;
+    letter-spacing: 0.05em;
+    z-index: 1;
+  }
+  .source-tip a {
+    color: rgba(205, 191, 158, 0.7);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .source-tip a:hover { 
+    color: #f2ead8;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  }
+
+  @media (max-width: 600px) {
+    .calendar-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .weather-card { padding: 20px 10px; }
+    .card-icon { font-size: 36px; }
+    .header h1 { font-size: 36px; }
+    .tooltip { width: 200px; left: 0; transform: translateX(0) translateY(10px); }
+    .tooltip::after { left: 20%; }
+    .weather-card:hover .tooltip { transform: translateX(0) translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- 完美复刻 index.html 的顶部导航栏 -->
+  <div class="topbar">
+    <a href="index.html">← 返回首页</a>
+  </div>
+
+  <div class="header">
+    <h1>上海 · 未来一周天气</h1>
+    <p>数据来源：中国天气网 · 更新时间 2026-11-15</p>
+  </div>
+
+  <!-- 日历网格 -->
+  <div class="calendar-grid" id="weatherGrid"></div>
+
+  <div class="source-tip">
+    预报数据引自 <a href="http://www.weather.com.cn/weather/101020100.shtml" target="_blank">中国天气网</a> 与 <a href="https://www.nmc.cn/publish/forecast/ASH/xujiahui.html" target="_blank">中央气象台</a>，仅供参考。
+  </div>
+
+<script>
+  // 权威来源实况与预报数据（中国天气网 & 中央气象台 2026-11-15 发布）
+  const weatherData = [
+    {
+      date: '11月15日',
+      weekday: '周日',
+      isToday: true,
+      icon: '🌤️',
+      condition: '阴转多云',
+      high: 19,
+      low: 13,
+      wind: '北风 3~4级',
+      humidity: '65%~95%',
+      sunrise: '06:20',
+      sunset: '16:56',
+      tip: '白天局部有短时小雨，夜里转多云',
+      index: '洗车较不宜'
+    },
+    {
+      date: '11月16日',
+      weekday: '周一',
+      isToday: false,
+      icon: '☁️',
+      condition: '多云转阴',
+      high: 18,
+      low: 13,
+      wind: '东北风 微风',
+      humidity: '60%~90%',
+      sunrise: '06:21',
+      sunset: '16:56',
+      tip: '白天体感舒适，夜里可能有短时小雨',
+      index: '运动适宜'
+    },
+    {
+      date: '11月17日',
+      weekday: '周二',
+      isToday: false,
+      icon: '🌧️',
+      condition: '小雨',
+      high: 17,
+      low: 11,
+      wind: '北风 3~4级',
+      humidity: '75%~95%',
+      sunrise: '06:22',
+      sunset: '16:55',
+      tip: '冷空气影响，伴有降雨、大风和降温',
+      index: '洗车不宜'
+    },
+    {
+      date: '11月18日',
+      weekday: '周三',
+      isToday: false,
+      icon: '☁️',
+      condition: '阴转多云',
+      high: 15,
+      low: 6,
+      wind: '西北风 3~4级',
+      humidity: '50%~80%',
+      sunrise: '06:23',
+      sunset: '16:54',
+      tip: '天空状况好转，气温明显下降',
+      index: '感冒较易发'
+    },
+    {
+      date: '11月19日',
+      weekday: '周四',
+      isToday: false,
+      icon: '🌤️',
+      condition: '多云转晴',
+      high: 11,
+      low: 5,
+      wind: '西北风 微风',
+      humidity: '40%~70%',
+      sunrise: '06:24',
+      sunset: '16:53',
+      tip: '早晨最低气温仅6℃左右，注意保暖',
+      index: '紫外线较强'
+    },
+    {
+      date: '11月20日',
+      weekday: '周五',
+      isToday: false,
+      icon: '☀️',
+      condition: '晴',
+      high: 12,
+      low: 5,
+      wind: '西风 微风',
+      humidity: '35%~65%',
+      sunrise: '06:25',
+      sunset: '16:52',
+      tip: '天气晴朗，气温开始逐渐回升',
+      index: '洗车适宜'
+    },
+    {
+      date: '11月21日',
+      weekday: '周六',
+      isToday: false,
+      icon: '☀️',
+      condition: '晴',
+      high: 14,
+      low: 8,
+      wind: '北风 微风',
+      humidity: '40%~70%',
+      sunrise: '06:26',
+      sunset: '16:51',
+      tip: '晴好持续，适宜户外活动',
+      index: '运动适宜'
+    }
+  ];
+
+  const grid = document.getElementById('weatherGrid');
+
+  weatherData.forEach(day => {
+    const card = document.createElement('div');
+    card.className = 'weather-card' + (day.isToday ? ' today' : '');
+
+    card.innerHTML = `
+      <div class="card-date">${day.date}</div>
+      <div class="card-weekday">${day.weekday}</div>
+      <div class="card-icon">${day.icon}</div>
+      <div class="card-temp">${day.high}°<span> / ${day.low}°C</span></div>
+      <div class="card-condition">${day.condition}</div>
+
+      <div class="tooltip">
+        <div class="tooltip-title">${day.date} · ${day.condition}</div>
+        <div class="tooltip-row"><span>风向风力</span><span>${day.wind}</span></div>
+        <div class="tooltip-row"><span>相对湿度</span><span>${day.humidity}</span></div>
+        <div class="tooltip-row"><span>日出 / 日落</span><span>${day.sunrise} / ${day.sunset}</span></div>
+        <div class="tooltip-row"><span>生活建议</span><span>${day.index}</span></div>
+        <div class="tooltip-tip">${day.tip}</div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+</script>
+
+</body>
+</html>

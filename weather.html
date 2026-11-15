@@ -92,15 +92,12 @@
     opacity: 0.8;
   }
 
-  /* 
-   * 核心布局修改：使用 Flexbox 替代 Grid 
-   * 强制换行，并让不满一行的元素居中
-   */
+  /* 核心布局：Flexbox 强制 4+3 换行并居中 */
   .calendar-grid {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 24px 20px; /* 上下间距 24px，左右间距 20px */
+    gap: 24px 20px;
     width: 100%;
     max-width: 960px;
     z-index: 1;
@@ -108,9 +105,8 @@
 
   /* 天气卡片 */
   .weather-card {
-    /* 强制占 1/4 宽度减去间距，确保第一排必定是 4 个 */
-    flex: 0 0 calc(25% - 15px);
-    min-width: 160px; /* 防止极度缩小时变形 */
+    flex: 0 0 calc(25% - 15px); /* 确保一行正好四个 */
+    min-width: 160px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 220, 150, 0.15);
     border-radius: 12px;
@@ -198,7 +194,7 @@
     letter-spacing: 0.05em;
   }
 
-  /* --- Tooltip 提示框通用样式 --- */
+  /* --- Tooltip 提示框通用基础样式 --- */
   .tooltip {
     position: absolute;
     left: 50%;
@@ -208,8 +204,11 @@
     border-radius: 12px;
     padding: 20px 22px;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 220, 150, 0.1);
+    
+    /* 修复关键：恢复透明度和可见性控制 */
     opacity: 0;
     visibility: hidden;
+    
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
     pointer-events: none;
     z-index: 210;
@@ -270,6 +269,8 @@
     border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
   }
   .weather-card:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
     transform: translateX(-50%) translateY(0);
   }
 
@@ -285,6 +286,8 @@
     border-color: transparent transparent rgba(255, 220, 150, 0.35) transparent;
   }
   .weather-card.tooltip-down:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
     transform: translateX(-50%) translateY(0);
   }
 
@@ -304,9 +307,9 @@
 
   /* 小屏幕适配 */
   @media (max-width: 860px) {
-    .weather-card { flex: 0 0 calc(33.33% - 14px); } /* 变成一排3个 */
+    .weather-card { flex: 0 0 calc(33.33% - 14px); }
     
-    /* 小屏幕下，由于换行逻辑变了，强制所有提示框向上弹出，防止乱飞 */
+    /* 小屏幕下强制所有提示框向上弹出 */
     .weather-card.tooltip-down .tooltip {
       top: auto;
       bottom: calc(100% + 16px);
@@ -323,7 +326,7 @@
   }
 
   @media (max-width: 600px) {
-    .weather-card { flex: 0 0 calc(50% - 10px); } /* 变成一排2个 */
+    .weather-card { flex: 0 0 calc(50% - 10px); }
     .weather-card { padding: 20px 8px; }
     .tooltip { width: 220px; left: 0; transform: translateX(0) translateY(10px) !important; }
     .tooltip::after { left: 30%; }
@@ -385,7 +388,7 @@
       const isToday = index === 0;
       const codeInfo = weatherCodeMap[day.code] || { text: '未知', icon: '❓' };
       
-      // 前 4 个卡片设为上排，工具提示向下弹；后 3 个为下排，向上弹
+      // 前 4 个卡片设为上排（向下弹），后 3 个为下排（向上弹）
       const isTopRow = index < 4;
       const tooltipClass = isTopRow ? ' tooltip-down' : '';
 

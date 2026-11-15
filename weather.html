@@ -50,7 +50,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 300; /* 导航栏层级 */
+    z-index: 100; /* 降低导航栏层级，确保被卡片盖住时不突兀 */
   }
 
   .topbar a {
@@ -92,19 +92,23 @@
     opacity: 0.8;
   }
 
-  /* 核心修改：auto-fit 实现响应式换行，避免第8个卡片孤零零换行 */
+  /* 
+   * 核心布局：使用 8 列网格 
+   * 上排 4 个卡片，每个占 2 列（共 8 列）
+   * 下排 3 个卡片，每个占 2 列，从第 2 列开始偏移实现居中
+   */
   .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 16px 20px;
     width: 100%;
-    max-width: 1100px;
+    max-width: 960px;
     z-index: 1;
-    transition: all 0.3s ease;
   }
 
-  /* 天气卡片 */
+  /* 天气卡片基础样式 */
   .weather-card {
+    grid-column: span 2; /* 默认占 2 列 */
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 220, 150, 0.15);
     border-radius: 12px;
@@ -115,16 +119,20 @@
     transition: all 0.3s ease;
   }
 
-  /* 核心修复：提升 z-index，确保 tooltip 不被导航栏遮挡 */
+  /* 下排第一个卡片偏移 1 列，使得 3 个卡片居中 */
+  .weather-card:nth-child(5) {
+    grid-column: 2 / span 2;
+  }
+
   .weather-card:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 220, 150, 0.4);
-    transform: translateY(-6px);
+    transform: translateY(-4px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 220, 150, 0.08);
-    z-index: 200; 
+    z-index: 200; /* 悬停时最高层级 */
   }
 
-  /* 当前日高亮 */
+  /* 今天标签 */
   .weather-card.today {
     background: rgba(255, 220, 150, 0.06);
     border-color: rgba(255, 220, 150, 0.6);
@@ -193,12 +201,10 @@
     letter-spacing: 0.05em;
   }
 
-  /* 悬停详情弹窗 */
+  /* --- Tooltip 提示框通用样式 --- */
   .tooltip {
     position: absolute;
-    bottom: calc(100% + 16px);
     left: 50%;
-    transform: translateX(-50%) translateY(10px);
     width: 260px;
     background: rgba(15, 15, 16, 0.98);
     border: 1px solid rgba(255, 220, 150, 0.35);
@@ -209,25 +215,17 @@
     visibility: hidden;
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
     pointer-events: none;
-    z-index: 210; /* 确保弹窗自身层级足够高 */
+    z-index: 210;
     text-align: left;
   }
 
   .tooltip::after {
     content: '';
     position: absolute;
-    top: 100%;
     left: 50%;
     transform: translateX(-50%);
     border-width: 8px;
     border-style: solid;
-    border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
-  }
-
-  .weather-card:hover .tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
   }
 
   .tooltip-title {
@@ -252,7 +250,6 @@
   }
   
   .tooltip-row:last-child { margin-bottom: 0; }
-  
   .tooltip-row span:first-child { color: #cdbf9e; }
 
   .tooltip-tip {
@@ -264,6 +261,32 @@
     color: #cdbf9e; 
     line-height: 1.6;
     text-align: justify;
+  }
+
+  /* --- 下排卡片（默认）：向上弹出 --- */
+  .weather-card:not(.tooltip-down) .tooltip {
+    bottom: calc(100% + 16px);
+    transform: translateX(-50%) translateY(10px);
+  }
+  .weather-card:not(.tooltip-down) .tooltip::after {
+    top: 100%;
+    border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
+  }
+  .weather-card:not(.tooltip-down):hover .tooltip {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* --- 上排卡片 (.tooltip-down)：向下弹出 --- */
+  .weather-card.tooltip-down .tooltip {
+    top: calc(100% + 16px);
+    transform: translateX(-50%) translateY(-10px);
+  }
+  .weather-card.tooltip-down .tooltip::after {
+    bottom: 100%;
+    border-color: transparent transparent rgba(255, 220, 150, 0.35) transparent;
+  }
+  .weather-card.tooltip-down:hover .tooltip {
+    transform: translateX(-50%) translateY(0);
   }
 
   .source-tip {
@@ -278,21 +301,34 @@
   .source-tip a {
     color: rgba(205, 191, 158, 0.7);
     text-decoration: none;
-    transition: color 0.3s;
-  }
-  .source-tip a:hover { 
-    color: #f2ead8;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
   }
 
-  @media (max-width: 600px) {
-    .calendar-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  /* 小屏幕适配：取消复杂网格，恢复普通流并统一向上弹出 */
+  @media (max-width: 860px) {
+    .calendar-grid { grid-template-columns: repeat(2, 1fr); max-width: 600px; }
+    .weather-card { grid-column: auto; } 
+    .weather-card:nth-child(5) { grid-column: auto; }
+    
+    .weather-card.tooltip-down .tooltip {
+      top: auto;
+      bottom: calc(100% + 16px);
+      transform: translateX(-50%) translateY(10px);
+    }
+    .weather-card.tooltip-down .tooltip::after {
+      top: 100%;
+      bottom: auto;
+      border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
+    }
+    .weather-card.tooltip-down:hover .tooltip {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .calendar-grid { grid-template-columns: 1fr; }
     .weather-card { padding: 20px 8px; }
-    .card-icon { font-size: 36px; }
-    .header h1 { font-size: 36px; }
-    .tooltip { width: 220px; left: 0; transform: translateX(0) translateY(10px); }
-    .tooltip::after { left: 20%; }
-    .weather-card:hover .tooltip { transform: translateX(0) translateY(0); }
+    .tooltip { width: 220px; left: 0; transform: translateX(0) translateY(10px) !important; }
+    .tooltip::after { left: 30%; }
   }
 </style>
 </head>
@@ -310,59 +346,54 @@
   <div class="calendar-grid" id="weatherGrid"></div>
 
   <div class="source-tip">
-    预报数据引自 <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a> 开源气象接口，实时更新，仅供参考。
+    预报数据引自 <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a> 开源气象接口，实时更新。
   </div>
 
 <script>
-  // 上海经纬度 (徐家汇附近)
   const LAT = 31.19;
   const LON = 121.44;
 
-  // WMO 天气代码 -> 中文 + Emoji 映射表
+  // 天气代码映射表
   const weatherCodeMap = {
     0: { text: '晴', icon: '☀️' },
     1: { text: '大部晴朗', icon: '🌤️' },
     2: { text: '多云', icon: '⛅' },
     3: { text: '阴', icon: '☁️' },
     45: { text: '雾', icon: '🌫️' },
-    48: { text: ' Depositing rime fog', icon: '🌫️' },
-    51: { text: '小毛毛雨', icon: '🌦️' },
-    53: { text: '中毛毛雨', icon: '🌦️' },
-    55: { text: '大毛毛雨', icon: '🌧️' },
-    56: { text: '冻毛毛雨', icon: '🌧️' },
-    57: { text: '强冻毛毛雨', icon: '🌧️' },
+    48: { text: '雾凇', icon: '🌫️' },
+    51: { text: '毛毛雨', icon: '🌦️' },
+    53: { text: '毛毛雨', icon: '🌦️' },
+    55: { text: '强毛毛雨', icon: '🌧️' },
     61: { text: '小雨', icon: '🌧️' },
     63: { text: '中雨', icon: '🌧️' },
     65: { text: '大雨', icon: '🌧️' },
-    66: { text: '冻雨', icon: '🌧️' },
-    67: { text: '强冻雨', icon: '🌧️' },
     71: { text: '小雪', icon: '🌨️' },
     73: { text: '中雪', icon: '🌨️' },
     75: { text: '大雪', icon: '❄️' },
-    77: { text: '雪粒', icon: '🌨️' },
-    80: { text: '小阵雨', icon: '🌦️' },
-    81: { text: '中阵雨', icon: '🌧️' },
-    82: { text: '强阵雨', icon: '⛈️' },
-    85: { text: '小阵雪', icon: '🌨️' },
-    86: { text: '强阵雪', icon: '❄️' },
+    80: { text: '阵雨', icon: '🌦️' },
+    81: { text: '强阵雨', icon: '🌧️' },
+    82: { text: '暴雨', icon: '⛈️' },
     95: { text: '雷阵雨', icon: '⛈️' },
-    96: { text: '雷阵雨伴小冰雹', icon: '⛈️' },
-    99: { text: '雷阵雨伴大冰雹', icon: '⛈️' }
+    96: { text: '雷阵雨伴冰雹', icon: '⛈️' }
   };
 
   const weekMap = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   const grid = document.getElementById('weatherGrid');
   const updateTimeEl = document.getElementById('updateTime');
 
-  // 渲染卡片的函数
   function renderCards(dataList) {
     grid.innerHTML = '';
+    
     dataList.forEach((day, index) => {
-      const isToday = index === 0; // 今天
+      const isToday = index === 0;
       const codeInfo = weatherCodeMap[day.code] || { text: '未知', icon: '❓' };
+      
+      // 核心逻辑：前 4 个（上排）向下弹，后 3 个（下排）默认向上弹
+      const isTopRow = index < 4;
+      const tooltipClass = isTopRow ? ' tooltip-down' : '';
 
       const card = document.createElement('div');
-      card.className = 'weather-card' + (isToday ? ' today' : '');
+      card.className = 'weather-card' + (isToday ? ' today' : '') + tooltipClass;
 
       card.innerHTML = `
         <div class="card-date">${day.month}月${day.day}日</div>
@@ -387,10 +418,8 @@
     updateTimeEl.textContent = `实时数据 · 更新于 ${now.getMonth()+1}月${now.getDate()}日 ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
   }
 
-  // 获取实时天气
   async function fetchWeather() {
     try {
-      // 请求 Open-Meteo API（免费、无需Key、支持CORS）
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
         `&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,` +
         `wind_speed_10m_max,wind_direction_10m_dominant,relative_humidity_2m_max,uv_index_max` +
@@ -398,10 +427,8 @@
 
       const response = await fetch(url);
       if (!response.ok) throw new Error('网络请求失败');
-      
       const data = await response.json();
       
-      // 解析返回数据
       const daily = data.daily;
       const weatherList = daily.time.map((timeStr, i) => {
         const d = new Date(timeStr);
@@ -417,13 +444,7 @@
         else if (windDirDeg >= 247.5 && windDirDeg < 292.5) windDirText = '西风';
         else if (windDirDeg >= 292.5 && windDirDeg < 337.5) windDirText = '西北风';
 
-        // 日出日落格式化
-        const formatTime = (isoStr) => {
-          const t = isoStr.split('T')[1];
-          return t ? t.substring(0, 5) : '--:--';
-        };
-
-        // 紫外线描述
+        const formatTime = (isoStr) => isoStr.split('T')[1]?.substring(0, 5) || '--:--';
         const uv = Math.round(daily.uv_index_max[i] || 0);
         let uvTip = uv <= 2 ? '较弱' : uv <= 5 ? '中等' : uv <= 7 ? '较强' : '很强';
 
@@ -446,8 +467,8 @@
 
       renderCards(weatherList);
     } catch (error) {
-      console.error('实时天气获取失败:', error);
-      // 降级显示备用静态数据（仅用于API失效时兜底，非实时）
+      console.error('天气获取失败:', error);
+      // 接口失败时的备用数据
       const fallback = [
         { month: 11, day: 15, weekday: 0, code: 2, tempMax: 19, tempMin: 13, windDir: '北风', windSpeed: 15, humidity: 80, sunrise: '06:20', sunset: '16:56', uvIndex: '中等', tip: '备用数据：北风 15km/h，紫外线中等。' },
         { month: 11, day: 16, weekday: 1, code: 3, tempMax: 18, tempMin: 13, windDir: '东北风', windSpeed: 10, humidity: 75, sunrise: '06:21', sunset: '16:56', uvIndex: '较弱', tip: '备用数据：东北风 10km/h，紫外线较弱。' },
@@ -458,11 +479,10 @@
         { month: 11, day: 21, weekday: 6, code: 0, tempMax: 14, tempMin: 8, windDir: '北风', windSpeed: 10, humidity: 60, sunrise: '06:26', sunset: '16:51', uvIndex: '中等', tip: '备用数据：北风 10km/h，晴朗。' }
       ];
       renderCards(fallback);
-      updateTimeEl.textContent = '实时接口请求失败，当前展示备用数据';
+      updateTimeEl.textContent = '实时接口请求失败，展示备用数据';
     }
   }
 
-  // 页面加载时执行
   fetchWeather();
 </script>
 

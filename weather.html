@@ -25,7 +25,6 @@
     position: relative;
   }
 
-  /* 复刻首页径向渐变背景 */
   body::before {
     content: '';
     position: fixed;
@@ -59,13 +58,10 @@
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
     font-size: 15px;
     letter-spacing: 0.15em;
-    display: inline-block;
     transition: transform 0.2s ease; 
   }
 
-  .topbar a:hover {
-    transform: scale(1.15);
-  }
+  .topbar a:hover { transform: scale(1.15); }
 
   /* 标题区域 */
   .header {
@@ -92,25 +88,22 @@
     opacity: 0.8;
   }
 
-  /* 核心布局：Flexbox 强制 4+3 换行并居中 */
+  /* 核心布局：强制 7 列 */
   .calendar-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 24px 20px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
     width: 100%;
-    max-width: 960px;
+    max-width: 1200px;
     z-index: 1;
   }
 
   /* 天气卡片 */
   .weather-card {
-    flex: 0 0 calc(25% - 15px); /* 确保一行正好四个 */
-    min-width: 160px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 220, 150, 0.15);
     border-radius: 12px;
-    padding: 28px 10px;
+    padding: 24px 6px;
     text-align: center;
     position: relative;
     cursor: default;
@@ -128,8 +121,9 @@
   /* 当前日高亮 */
   .weather-card.today {
     background: rgba(255, 220, 150, 0.06);
-    border-color: rgba(255, 220, 150, 0.6);
-    box-shadow: 0 0 20px rgba(255, 220, 150, 0.1);
+    border: 2px solid #cdbf9e;
+    box-shadow: 0 0 20px rgba(255, 220, 150, 0.2);
+    transform: scale(1.02);
   }
   
   .weather-card.today::before {
@@ -141,7 +135,7 @@
     background: #cdbf9e;
     color: #0f0f10;
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: bold;
     padding: 2px 10px;
     border-radius: 10px;
@@ -149,65 +143,26 @@
     white-space: nowrap;
   }
 
-  .card-date {
-    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 14px;
-    color: #cdbf9e;
-    margin-bottom: 6px;
-    letter-spacing: 0.05em;
-  }
+  .card-date { font-family: "Songti SC", "STSong", "SimSun", "宋体", serif; font-size: 13px; color: #cdbf9e; margin-bottom: 6px; letter-spacing: 0.05em; }
+  .card-weekday { font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive; font-size: 18px; color: #f2ead8; margin-bottom: 16px; letter-spacing: 0.05em; }
+  .card-icon { font-size: 36px; line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255, 220, 150, 0.2)); }
+  .card-temp { font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive; font-size: 22px; color: #f2ead8; letter-spacing: 0.02em; white-space: nowrap; }
+  .card-temp span { font-size: 13px; color: rgba(205, 191, 158, 0.6); margin-left: 2px; }
+  .card-condition { font-family: "Songti SC", "STSong", "SimSun", "宋体", serif; font-size: 13px; color: #cdbf9e; margin-top: 8px; letter-spacing: 0.05em; }
 
-  .card-weekday {
-    font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
-    font-size: 22px;
-    color: #f2ead8;
-    margin-bottom: 20px;
-    letter-spacing: 0.05em;
-  }
-
-  .card-icon {
-    font-size: 46px;
-    line-height: 1;
-    margin-bottom: 16px;
-    filter: drop-shadow(0 0 10px rgba(255, 220, 150, 0.2));
-  }
-
-  .card-temp {
-    font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
-    font-size: 26px;
-    color: #f2ead8;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-  
-  .card-temp span {
-    font-size: 15px;
-    color: rgba(205, 191, 158, 0.6);
-    margin-left: 2px;
-  }
-
-  .card-condition {
-    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 15px;
-    color: #cdbf9e;
-    margin-top: 10px;
-    letter-spacing: 0.05em;
-  }
-
-  /* --- Tooltip 提示框通用基础样式 --- */
+  /* --- Tooltip 提示框（尺寸加大） --- */
   .tooltip {
     position: absolute;
     left: 50%;
-    width: 260px;
+    width: 320px; /* 加大宽度以容纳图表 */
     background: rgba(15, 15, 16, 0.98);
     border: 1px solid rgba(255, 220, 150, 0.35);
     border-radius: 12px;
-    padding: 20px 22px;
+    padding: 20px;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 220, 150, 0.1);
     
     opacity: 0;
     visibility: hidden;
-    
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
     pointer-events: none;
     z-index: 210;
@@ -243,90 +198,99 @@
     margin-bottom: 8px;
     color: #f2ead8;
   }
-  
   .tooltip-row:last-child { margin-bottom: 0; }
   .tooltip-row span:first-child { color: #cdbf9e; }
 
   .tooltip-tip {
-    margin-top: 12px; 
-    padding-top: 10px; 
-    border-top: 1px dashed rgba(255, 220, 150, 0.2); 
+    margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255, 220, 150, 0.2); 
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 13px; 
-    color: #cdbf9e; 
-    line-height: 1.6;
-    text-align: justify;
+    font-size: 13px; color: #cdbf9e; line-height: 1.6; text-align: justify;
   }
 
-  /* --- 默认（下排）：向上弹出 --- */
+  /* --- 图表区域样式 --- */
+  .chart-container {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed rgba(255, 220, 150, 0.2);
+    position: relative;
+  }
+  .chart-title {
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 13px;
+    color: #cdbf9e;
+    margin-bottom: 8px;
+  }
+  .chart-svg {
+    width: 100%;
+    height: 70px;
+    overflow: visible;
+  }
+  
+  /* 折线动画：初始隐藏线条，使用虚线偏移模拟画线 */
+  .chart-line {
+    fill: none;
+    stroke: #60a5fa; /* 亮蓝色，与整体色彩形成对比且代表水 */
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 500;
+    stroke-dashoffset: 500;
+    transition: stroke-dashoffset 0.6s ease-out;
+    transition-delay: 0.15s; /* 延迟，等待卡片框弹出一半再开始画 */
+  }
+  
+  .chart-point {
+    fill: #0f0f10;
+    stroke: #60a5fa;
+    stroke-width: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    transition-delay: 0.5s;
+  }
+
+  .chart-label {
+    font-family: "sans-serif";
+    font-size: 10px;
+    fill: rgba(205, 191, 158, 0.5);
+    text-anchor: middle;
+  }
+
+  /* 悬浮卡片时，触发画线和圆点出现 */
+  .weather-card:hover .chart-line { stroke-dashoffset: 0; }
+  .weather-card:hover .chart-point { opacity: 1; }
+
+  /* --- 向上/向下弹出方向逻辑 --- */
   .weather-card .tooltip {
+    top: calc(100% + 16px);
+    transform: translateX(-50%) translateY(-10px);
+  }
+  .weather-card .tooltip::after {
+    bottom: 100%; top: auto;
+    border-color: transparent transparent rgba(255, 220, 150, 0.35) transparent;
+  }
+  .weather-card:hover .tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+  .weather-card.tooltip-up .tooltip {
+    top: auto;
     bottom: calc(100% + 16px);
     transform: translateX(-50%) translateY(10px);
   }
-  .weather-card .tooltip::after {
-    top: 100%;
+  .weather-card.tooltip-up .tooltip::after {
+    top: 100%; bottom: auto;
     border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
   }
-  .weather-card:hover .tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-  }
+  .weather-card.tooltip-up:hover .tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-  /* --- 上排卡片 (.tooltip-down)：向下弹出，避开导航栏 --- */
-  .weather-card.tooltip-down .tooltip {
-    top: calc(100% + 16px);
-    bottom: auto;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  .weather-card.tooltip-down .tooltip::after {
-    bottom: 100%;
-    top: auto;
-    border-color: transparent transparent rgba(255, 220, 150, 0.35) transparent;
-  }
-  .weather-card.tooltip-down:hover .tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-  }
+  .source-tip { margin-top: 50px; font-family: "Songti SC", "STSong", "SimSun", "宋体", serif; font-size: 14px; color: rgba(205, 191, 158, 0.4); text-align: center; z-index: 1; }
+  .source-tip a { color: rgba(205, 191, 158, 0.7); text-decoration: none; }
 
-  .source-tip {
-    margin-top: 50px;
-    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 14px;
-    color: rgba(205, 191, 158, 0.4);
-    text-align: center;
-    letter-spacing: 0.05em;
-    z-index: 1;
-  }
-  .source-tip a {
-    color: rgba(205, 191, 158, 0.7);
-    text-decoration: none;
-  }
-
-  /* 小屏幕适配 */
-  @media (max-width: 860px) {
-    .weather-card { flex: 0 0 calc(33.33% - 14px); }
-    .weather-card.tooltip-down .tooltip {
-      top: auto;
-      bottom: calc(100% + 16px);
-      transform: translateX(-50%) translateY(10px);
-    }
-    .weather-card.tooltip-down .tooltip::after {
-      top: 100%;
-      bottom: auto;
-      border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
-    }
-    .weather-card.tooltip-down:hover .tooltip {
-      transform: translateX(-50%) translateY(0);
-    }
-  }
-
+  @media (max-width: 1024px) { .calendar-grid { grid-template-columns: repeat(4, 1fr); } }
   @media (max-width: 600px) {
-    .weather-card { flex: 0 0 calc(50% - 10px); }
-    .weather-card { padding: 20px 8px; }
-    .tooltip { width: 220px; left: 0; transform: translateX(0) translateY(10px) !important; }
-    .tooltip::after { left: 30%; }
+    .calendar-grid { grid-template-columns: repeat(2, 1fr); }
+    .weather-card { padding: 16px 4px; }
+    .tooltip { width: 280px; left: 0; transform: translateX(0) translateY(10px) !important; }
+    .tooltip::after { left: 20%; }
+    .weather-card:hover .tooltip { transform: translateX(0) translateY(0) !important; }
   }
 </style>
 </head>
@@ -337,7 +301,7 @@
   </div>
 
   <div class="header">
-    <h1>上海 · 未来一周天气</h1>
+    <h1>上海 · 14 天天气</h1>
     <p id="updateTime">正在为您加载最新气象数据...</p>
   </div>
 
@@ -363,18 +327,59 @@
   const grid = document.getElementById('weatherGrid');
   const updateTimeEl = document.getElementById('updateTime');
 
-  // 渲染卡片的主函数
+  // 生成 SVG 折线图字符串
+  function generateChartSVG(probs) {
+    if (!probs || probs.length === 0) return '';
+    
+    const width = 280;
+    const height = 60; // 留出底部放文字的空间
+    const paddingX = 15;
+    const paddingY = 10;
+    const stepX = (width - paddingX * 2) / (probs.length - 1);
+    
+    const timeLabels = ['00', '03', '06', '09', '12', '15', '18', '21'];
+    
+    let points = [];
+    let labels = [];
+    
+    probs.forEach((prob, i) => {
+      const x = paddingX + i * stepX;
+      // Y轴反转：概率100%在顶部(paddingY)，0%在底部(height)
+      const y = height - (prob / 100) * (height - paddingY) - 5;
+      points.push(`${x},${y}`);
+      labels.push(`<text x="${x}" y="${height + 12}" class="chart-label">${timeLabels[i]}</text>`);
+    });
+
+    const pathD = `M ${points.join(' L ')}`;
+    const circles = points.map(p => {
+      const [cx, cy] = p.split(',');
+      return `<circle cx="${cx}" cy="${cy}" r="3" class="chart-point" />`;
+    }).join('');
+
+    return `
+      <div class="chart-title">分时降水概率</div>
+      <svg class="chart-svg" viewBox="0 0 ${width} ${height + 15}">
+        <path d="${pathD}" class="chart-line" />
+        ${circles}
+        ${labels.join('')}
+      </svg>
+    `;
+  }
+
   function renderCards(dataList, isRealtime = false) {
     grid.innerHTML = '';
-    
+    const todayStr = new Date().toLocaleDateString('zh-CN');
+
     dataList.forEach((day, index) => {
-      const isToday = index === 0;
+      const isToday = day.fullDateStr === todayStr;
       const codeInfo = weatherCodeMap[day.code] || { text: '未知', icon: '❓' };
-      const isTopRow = index < 4;
-      const tooltipClass = isTopRow ? ' tooltip-down' : '';
+      const isSecondRow = index >= 7;
+      const tooltipClass = isSecondRow ? ' tooltip-up' : '';
 
       const card = document.createElement('div');
       card.className = 'weather-card' + (isToday ? ' today' : '') + tooltipClass;
+
+      const chartHTML = generateChartSVG(day.precipProbs);
 
       card.innerHTML = `
         <div class="card-date">${day.month}月${day.day}日</div>
@@ -390,6 +395,9 @@
           <div class="tooltip-row"><span>日出 / 日落</span><span>${day.sunrise} / ${day.sunset}</span></div>
           <div class="tooltip-row"><span>紫外线指数</span><span>${day.uvIndex}</span></div>
           <div class="tooltip-tip">${day.tip}</div>
+          <div class="chart-container">
+            ${chartHTML}
+          </div>
         </div>
       `;
       grid.appendChild(card);
@@ -407,10 +415,14 @@
     }
   }
 
-  // 生成当前日期的7天离线数据（用于秒开兜底）
   function generateFallbackData() {
     const data = [];
     const today = new Date();
+    const dayOfWeek = today.getDay();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - dayOfWeek);
+    weekStart.setHours(0,0,0,0);
+
     const sampleWeather = [
       { code: 2, tMax: 19, tMin: 13, wDir: '北风', wSpeed: 15, hum: 80, uv: '中等' },
       { code: 3, tMax: 18, tMin: 13, wDir: '东北风', wSpeed: 10, hum: 75, uv: '较弱' },
@@ -421,32 +433,53 @@
       { code: 0, tMax: 14, tMin: 8, wDir: '北风', wSpeed: 10, hum: 60, uv: '中等' }
     ];
 
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const s = sampleWeather[i];
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const s = sampleWeather[i % 7];
+      // 随机生成模拟的降水概率数据用于兜底展示
+      const mockProbs = Array.from({ length: 8 }, () => Math.floor(Math.random() * (s.code > 50 ? 80 : 20)));
+      
       data.push({
+        fullDateStr: d.toLocaleDateString('zh-CN'),
         month: d.getMonth() + 1, day: d.getDate(), weekday: d.getDay(),
         code: s.code, tempMax: s.tMax, tempMin: s.tMin,
         windDir: s.wDir, windSpeed: s.wSpeed, humidity: s.hum,
         sunrise: '06:20', sunset: '16:56', uvIndex: s.uv,
-        tip: `${s.wDir} ${s.wSpeed}km/h，紫外线${s.uv}，相对湿度${s.hum}%。`
+        tip: `${s.wDir} ${s.wSpeed}km/h，紫外线${s.uv}，相对湿度${s.hum}%。`,
+        precipProbs: mockProbs
       });
     }
     return data;
   }
 
-  // 发起真实网络请求
   async function fetchWeather() {
-    // 创建 AbortController 用于超时中断（避免卡死等太久）
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超时
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     try {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - dayOfWeek);
+
+      const formatDateStr = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+
+      const startDateStr = formatDateStr(weekStart);
+      const endDate = new Date(weekStart);
+      endDate.setDate(weekStart.getDate() + 13);
+      const endDateStr = formatDateStr(endDate);
+
+      // 加入 hourly=precipitation_probability
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
-        `&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,` +
-        `wind_speed_10m_max,wind_direction_10m_dominant,relative_humidity_2m_max,uv_index_max` +
-        `&timezone=Asia/Shanghai&forecast_days=7`;
+        `&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant,relative_humidity_2m_max,uv_index_max` +
+        `&hourly=precipitation_probability` +
+        `&timezone=Asia/Shanghai&start_date=${startDateStr}&end_date=${endDateStr}`;
 
       const response = await fetch(url, { signal: controller.signal });
       clearTimeout(timeoutId);
@@ -455,6 +488,8 @@
       const data = await response.json();
       
       const daily = data.daily;
+      const hourly = data.hourly; // 拿到分时数据
+
       const weatherList = daily.time.map((timeStr, i) => {
         const d = new Date(timeStr);
         
@@ -472,29 +507,34 @@
         const uv = Math.round(daily.uv_index_max[i] || 0);
         let uvTip = uv <= 2 ? '较弱' : uv <= 5 ? '中等' : uv <= 7 ? '较强' : '很强';
 
+        // 提取这一天每3小时的概率：[0, 3, 6, 9, 12, 15, 18, 21]
+        const dayProbs = [];
+        for (let h = 0; h < 24; h += 3) {
+          // hourly.time 格式如 "2026-11-15T00:00"
+          const hourTimeStr = `${timeStr}T${String(h).padStart(2, '0')}:00`;
+          const hourIndex = hourly.time.indexOf(hourTimeStr);
+          dayProbs.push(hourIndex !== -1 ? hourly.precipitation_probability[hourIndex] : 0);
+        }
+
         return {
+          fullDateStr: d.toLocaleDateString('zh-CN'),
           month: d.getMonth() + 1, day: d.getDate(), weekday: d.getDay(),
           code: daily.weather_code[i], tempMax: daily.temperature_2m_max[i], tempMin: daily.temperature_2m_min[i],
           sunrise: formatTime(daily.sunrise[i]), sunset: formatTime(daily.sunset[i]),
           humidity: Math.round(daily.relative_humidity_2m_max[i] || 0), windDir: windDirText,
           windSpeed: Math.round(daily.wind_speed_10m_max[i] || 0), uvIndex: uvTip,
-          tip: `${windDirText} ${Math.round(daily.wind_speed_10m_max[i] || 0)}km/h，紫外线${uvTip}，相对湿度${Math.round(daily.relative_humidity_2m_max[i] || 0)}%。`
+          tip: `${windDirText} ${Math.round(daily.wind_speed_10m_max[i] || 0)}km/h，紫外线${uvTip}，相对湿度${Math.round(daily.relative_humidity_2m_max[i] || 0)}%。`,
+          precipProbs: dayProbs
         };
       });
 
-      // 获取成功，覆盖渲染为真实数据
       renderCards(weatherList, true);
     } catch (error) {
-      console.warn('获取实时数据失败或超时，保持离线数据展示:', error);
-      // 超时或失败，什么都不做，保留页面上的兜底数据
+      console.warn('获取实时数据失败或超时:', error);
     }
   }
 
-  // 页面初始化流程
-  // 1. 立刻用生成的数据渲染，实现秒开！
   renderCards(generateFallbackData(), false);
-  
-  // 2. 后台静默请求真实数据
   fetchWeather();
 </script>
 

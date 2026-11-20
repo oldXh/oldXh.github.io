@@ -150,15 +150,16 @@
   .card-temp span { font-size: 13px; color: rgba(205, 191, 158, 0.6); margin-left: 2px; }
   .card-condition { font-family: "Songti SC", "STSong", "SimSun", "宋体", serif; font-size: 13px; color: #cdbf9e; margin-top: 8px; letter-spacing: 0.05em; }
 
-  /* --- Tooltip 提示框（尺寸加大） --- */
+  /* --- Tooltip 提示框 --- */
   .tooltip {
     position: absolute;
     left: 50%;
-    width: 320px; /* 加大宽度以容纳图表 */
+    width: 320px;
     background: rgba(15, 15, 16, 0.98);
     border: 1px solid rgba(255, 220, 150, 0.35);
     border-radius: 12px;
-    padding: 20px;
+    /* 增加底部 padding，避免内容贴边 */
+    padding: 20px 20px 24px 20px; 
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 220, 150, 0.1);
     
     opacity: 0;
@@ -209,8 +210,8 @@
 
   /* --- 图表区域样式 --- */
   .chart-container {
-    margin-top: 15px;
-    padding-top: 15px;
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px dashed rgba(255, 220, 150, 0.2);
     position: relative;
   }
@@ -218,25 +219,28 @@
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
     font-size: 13px;
     color: #cdbf9e;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
+  
+  /* 核心修复：让 SVG 自适应高度，不再被裁剪 */
   .chart-svg {
+    display: block;
     width: 100%;
-    height: 70px;
+    height: auto;
     overflow: visible;
   }
   
-  /* 折线动画：初始隐藏线条，使用虚线偏移模拟画线 */
+  /* 折线动画 */
   .chart-line {
     fill: none;
-    stroke: #60a5fa; /* 亮蓝色，与整体色彩形成对比且代表水 */
+    stroke: #60a5fa;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-dasharray: 500;
     stroke-dashoffset: 500;
     transition: stroke-dashoffset 0.6s ease-out;
-    transition-delay: 0.15s; /* 延迟，等待卡片框弹出一半再开始画 */
+    transition-delay: 0.15s;
   }
   
   .chart-point {
@@ -250,16 +254,15 @@
 
   .chart-label {
     font-family: "sans-serif";
-    font-size: 10px;
-    fill: rgba(205, 191, 158, 0.5);
+    font-size: 11px;
+    fill: rgba(205, 191, 158, 0.6);
     text-anchor: middle;
   }
 
-  /* 悬浮卡片时，触发画线和圆点出现 */
   .weather-card:hover .chart-line { stroke-dashoffset: 0; }
   .weather-card:hover .chart-point { opacity: 1; }
 
-  /* --- 向上/向下弹出方向逻辑 --- */
+  /* --- 向上/向下弹出逻辑 --- */
   .weather-card .tooltip {
     top: calc(100% + 16px);
     transform: translateX(-50%) translateY(-10px);
@@ -327,40 +330,42 @@
   const grid = document.getElementById('weatherGrid');
   const updateTimeEl = document.getElementById('updateTime');
 
-  // 生成 SVG 折线图字符串
+  // 核心修复：重新计算 SVG 内部坐标，留出底部空间
   function generateChartSVG(probs) {
     if (!probs || probs.length === 0) return '';
     
     const width = 280;
-    const height = 60; // 留出底部放文字的空间
-    const paddingX = 15;
-    const paddingY = 10;
-    const stepX = (width - paddingX * 2) / (probs.length - 1);
+    const chartHeight = 50; // 折线高度区域
+    const paddingX = 12;
+    const paddingTop = 8;
+    const paddingBottom = 18; // 给 X 轴文字留出空间
+    const totalHeight = chartHeight + paddingTop + paddingBottom;
     
+    const stepX = (width - paddingX * 2) / (probs.length - 1);
     const timeLabels = ['00', '03', '06', '09', '12', '15', '18', '21'];
     
     let points = [];
     let labels = [];
+    let circles = [];
     
     probs.forEach((prob, i) => {
       const x = paddingX + i * stepX;
-      // Y轴反转：概率100%在顶部(paddingY)，0%在底部(height)
-      const y = height - (prob / 100) * (height - paddingY) - 5;
+      // 坐标转换
+      const y = chartHeight + paddingTop - (prob / 100) * chartHeight;
+      
       points.push(`${x},${y}`);
-      labels.push(`<text x="${x}" y="${height + 12}" class="chart-label">${timeLabels[i]}</text>`);
+      circles.push(`<circle cx="${x}" cy="${y}" r="2.5" class="chart-point" />`);
+      // 确保文字处于 viewBox 底部边缘之上
+      labels.push(`<text x="${x}" y="${totalHeight - 2}" class="chart-label">${timeLabels[i]}</text>`);
     });
 
     const pathD = `M ${points.join(' L ')}`;
-    const circles = points.map(p => {
-      const [cx, cy] = p.split(',');
-      return `<circle cx="${cx}" cy="${cy}" r="3" class="chart-point" />`;
-    }).join('');
 
     return `
       <div class="chart-title">分时降水概率</div>
-      <svg class="chart-svg" viewBox="0 0 ${width} ${height + 15}">
+      <svg class="chart-svg" viewBox="0 0 ${width} ${totalHeight}">
         <path d="${pathD}" class="chart-line" />
-        ${circles}
+        ${circles.join('')}
         ${labels.join('')}
       </svg>
     `;
@@ -437,7 +442,6 @@
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
       const s = sampleWeather[i % 7];
-      // 随机生成模拟的降水概率数据用于兜底展示
       const mockProbs = Array.from({ length: 8 }, () => Math.floor(Math.random() * (s.code > 50 ? 80 : 20)));
       
       data.push({
@@ -475,7 +479,6 @@
       endDate.setDate(weekStart.getDate() + 13);
       const endDateStr = formatDateStr(endDate);
 
-      // 加入 hourly=precipitation_probability
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
         `&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant,relative_humidity_2m_max,uv_index_max` +
         `&hourly=precipitation_probability` +
@@ -488,7 +491,7 @@
       const data = await response.json();
       
       const daily = data.daily;
-      const hourly = data.hourly; // 拿到分时数据
+      const hourly = data.hourly;
 
       const weatherList = daily.time.map((timeStr, i) => {
         const d = new Date(timeStr);
@@ -507,10 +510,8 @@
         const uv = Math.round(daily.uv_index_max[i] || 0);
         let uvTip = uv <= 2 ? '较弱' : uv <= 5 ? '中等' : uv <= 7 ? '较强' : '很强';
 
-        // 提取这一天每3小时的概率：[0, 3, 6, 9, 12, 15, 18, 21]
         const dayProbs = [];
         for (let h = 0; h < 24; h += 3) {
-          // hourly.time 格式如 "2026-11-15T00:00"
           const hourTimeStr = `${timeStr}T${String(h).padStart(2, '0')}:00`;
           const hourIndex = hourly.time.indexOf(hourTimeStr);
           dayProbs.push(hourIndex !== -1 ? hourly.precipitation_probability[hourIndex] : 0);

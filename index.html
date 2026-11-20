@@ -2,36 +2,42 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>oldXh.github.io(目前处于内侧中……)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天气预报 - 上海</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
     background: #0f0f10;
   }
 
   body {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    overflow: auto;
-  }
-
-  .stage {
+    padding: 140px 20px 60px;
     position: relative;
-    width: 1440px;
-    height: 900px;
-    flex: 0 0 auto;
-    background: radial-gradient(circle at 50% 50%, #1c1c20, #0b0b0d 70%);
-    overflow: hidden;
-    color: #f2ead8;
   }
 
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, #1c1c20, #0b0b0d 70%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* 顶部导航栏 */
   .topbar {
     position: absolute;
     left: 0;
@@ -46,131 +52,492 @@
     z-index: 100;
   }
 
-  .topbar a, .dropdown > span {
+  .topbar a {
     color: #ffffff;
     text-decoration: none;
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
     font-size: 15px;
     letter-spacing: 0.15em;
-    display: inline-block;
-    transition: transform 0.2s ease, color 0.2s ease;
-    cursor: pointer;
+    transition: transform 0.2s ease; 
   }
 
-  .topbar a:hover, .dropdown:hover > span {
-    transform: scale(1.15);
-  }
+  .topbar a:hover { transform: scale(1.15); }
 
-  .topbar > a:first-child {
-    margin-right: 40px; 
-  }
-
-  /* 下拉菜单容器 */
-  .dropdown {
-    position: relative;
-    display: inline-block;
-    margin-left: 40px;
-  }
-
-  /* 透明过桥区，防止鼠标移向下拉框时菜单意外关闭 */
-  .dropdown::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 100%;
-    width: 100%;
-    height: 15px;
-  }
-
-  /* 下拉列表 */
-  .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    background: rgba(20, 28, 48, 0.95);
-    border: 1px solid rgba(59, 130, 246, 0.4);
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(37, 99, 235, 0.2);
-    backdrop-filter: blur(8px);
-    list-style: none;
-    padding: 8px 0;
-    min-width: 130px;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
-    z-index: 101;
-  }
-
-  .dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  .dropdown-menu li a {
-    display: block;
-    padding: 10px 20px;
-    font-size: 14px;
-    letter-spacing: 0.1em;
+  /* 标题区域 */
+  .header {
     text-align: center;
-    white-space: nowrap;
+    margin-bottom: 40px;
+    z-index: 1;
   }
 
-  .dropdown-menu li a:hover {
-    background: rgba(37, 99, 235, 0.3);
-    transform: none;
-  }
-
-  .at {
-    position: absolute;
-    left: calc(50% + var(--x, 0px));
-    top:  calc(50% - var(--y, 0px));
-    transform: translate(-50%, -50%);
-  }
-
-  .title {
-    --y: 80px;
-    width: 556px;
-    display: flex;
-    justify-content: space-between;
+  .header h1 {
     font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
-    font-size: 112px;
-    line-height: 1;
-    white-space: nowrap;
+    font-size: 46px;
+    font-weight: normal;
+    color: #f2ead8;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
     text-shadow: 0 0 24px rgba(255, 220, 150, .25);
   }
 
-  .subtitle {
-    --y: -55px;
+  .header p {
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 48px;
-    line-height: 1.2;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
+    font-size: 15px;
     color: #cdbf9e;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+  }
+
+  /* 核心布局：强制 7 列 */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1200px;
+    z-index: 1;
+  }
+
+  /* 天气卡片 */
+  .weather-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 220, 150, 0.15);
+    border-radius: 12px;
+    padding: 24px 6px;
+    text-align: center;
+    position: relative;
+    cursor: default;
+    transition: all 0.3s ease;
+  }
+
+  .weather-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 220, 150, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 220, 150, 0.08);
+    z-index: 200;
+  }
+
+  /* 当前日高亮 */
+  .weather-card.today {
+    background: rgba(255, 220, 150, 0.06);
+    border: 2px solid #cdbf9e;
+    box-shadow: 0 0 20px rgba(255, 220, 150, 0.2);
+    transform: scale(1.02);
+  }
+  
+  .weather-card.today::before {
+    content: '今天';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #cdbf9e;
+    color: #0f0f10;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 10px;
+    border-radius: 10px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .card-date { font-family: "Songti SC", "STSong", "SimSun", "宋体", serif; font-size: 13px; color: #cdbf9e; margin-bottom: 6px; letter-spacing: 0.05em; }
+  .card-weekday { font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive; font-size: 18px; color: #f2ead8; margin-bottom: 16px; letter-spacing: 0.05em; }
+  .card-icon { font-size: 36px; line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255, 220, 150, 0.2)); }
+  .card-temp { font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive; font-size: 22px; color: #f2ead8; letter-spacing: 0.02em; white-space: nowrap; }
+  .card-temp span { font-size: 13px; color: rgba(205, 191, 158, 0.6); margin-left: 2px; }
+  .card-condition { font-family: "Songti SC", "STSong", "SimSun", "宋体", serif; font-size: 13px; color: #cdbf9e; margin-top: 8px; letter-spacing: 0.05em; }
+
+  /* --- Tooltip 提示框 --- */
+  .tooltip {
+    position: absolute;
+    left: 50%;
+    width: 320px;
+    background: rgba(15, 15, 16, 0.98);
+    border: 1px solid rgba(255, 220, 150, 0.35);
+    border-radius: 12px;
+    /* 增加底部 padding，避免内容贴边 */
+    padding: 20px 20px 24px 20px; 
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 220, 150, 0.1);
+    
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+    pointer-events: none;
+    z-index: 210;
+    text-align: left;
+  }
+
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+  }
+
+  .tooltip-title {
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #f2ead8;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed rgba(255, 220, 150, 0.2);
+    padding-bottom: 10px;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #f2ead8;
+  }
+  .tooltip-row:last-child { margin-bottom: 0; }
+  .tooltip-row span:first-child { color: #cdbf9e; }
+
+  .tooltip-tip {
+    margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255, 220, 150, 0.2); 
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 13px; color: #cdbf9e; line-height: 1.6; text-align: justify;
+  }
+
+  /* --- 图表区域样式 --- */
+  .chart-container {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255, 220, 150, 0.2);
+    position: relative;
+  }
+  .chart-title {
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 13px;
+    color: #cdbf9e;
+    margin-bottom: 6px;
+  }
+  
+  /* 核心修复：让 SVG 自适应高度，不再被裁剪 */
+  .chart-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  
+  /* 折线动画 */
+  .chart-line {
+    fill: none;
+    stroke: #60a5fa;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 500;
+    stroke-dashoffset: 500;
+    transition: stroke-dashoffset 0.6s ease-out;
+    transition-delay: 0.15s;
+  }
+  
+  .chart-point {
+    fill: #0f0f10;
+    stroke: #60a5fa;
+    stroke-width: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    transition-delay: 0.5s;
+  }
+
+  .chart-label {
+    font-family: "sans-serif";
+    font-size: 11px;
+    fill: rgba(205, 191, 158, 0.6);
+    text-anchor: middle;
+  }
+
+  .weather-card:hover .chart-line { stroke-dashoffset: 0; }
+  .weather-card:hover .chart-point { opacity: 1; }
+
+  /* --- 向上/向下弹出逻辑 --- */
+  .weather-card .tooltip {
+    top: calc(100% + 16px);
+    transform: translateX(-50%) translateY(-10px);
+  }
+  .weather-card .tooltip::after {
+    bottom: 100%; top: auto;
+    border-color: transparent transparent rgba(255, 220, 150, 0.35) transparent;
+  }
+  .weather-card:hover .tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+  .weather-card.tooltip-up .tooltip {
+    top: auto;
+    bottom: calc(100% + 16px);
+    transform: translateX(-50%) translateY(10px);
+  }
+  .weather-card.tooltip-up .tooltip::after {
+    top: 100%; bottom: auto;
+    border-color: rgba(255, 220, 150, 0.35) transparent transparent transparent;
+  }
+  .weather-card.tooltip-up:hover .tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+  .source-tip { margin-top: 50px; font-family: "Songti SC", "STSong", "SimSun", "宋体", serif; font-size: 14px; color: rgba(205, 191, 158, 0.4); text-align: center; z-index: 1; }
+  .source-tip a { color: rgba(205, 191, 158, 0.7); text-decoration: none; }
+
+  @media (max-width: 1024px) { .calendar-grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 600px) {
+    .calendar-grid { grid-template-columns: repeat(2, 1fr); }
+    .weather-card { padding: 16px 4px; }
+    .tooltip { width: 280px; left: 0; transform: translateX(0) translateY(10px) !important; }
+    .tooltip::after { left: 20%; }
+    .weather-card:hover .tooltip { transform: translateX(0) translateY(0) !important; }
   }
 </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="topbar">
-      <a href="download.html">下载📥</a>
-      <a href="aboutus.html">公告📢</a>
-      
-      <!-- 可下拉的“其他”菜单 -->
-      <div class="dropdown">
-        <span>其他 ▾</span>
-        <ul class="dropdown-menu">
-          <li><a href="weather.html">天气预报 ☁️</a></li>
-        </ul>
-      </div>
-    </div>
 
-    <div class="at title">
-      <span>欢</span><span>迎</span><span>光</span><span>临</span>
-    </div>
-    <div class="at subtitle">Happy new year~</div>
+  <div class="topbar">
+    <a href="index.html">← 返回首页</a>
   </div>
+
+  <div class="header">
+    <h1>上海 · 14 天天气</h1>
+    <p id="updateTime">正在为您加载最新气象数据...</p>
+  </div>
+
+  <div class="calendar-grid" id="weatherGrid"></div>
+
+  <div class="source-tip">
+    预报数据引自 <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a> 开源气象接口，当前为极速加载模式。
+  </div>
+
+<script>
+  const LAT = 31.19;
+  const LON = 121.44;
+
+  const weatherCodeMap = {
+    0: { text: '晴', icon: '☀️' }, 1: { text: '大部晴朗', icon: '🌤️' }, 2: { text: '多云', icon: '⛅' }, 3: { text: '阴', icon: '☁️' },
+    45: { text: '雾', icon: '🌫️' }, 48: { text: '雾凇', icon: '🌫️' }, 51: { text: '毛毛雨', icon: '🌦️' }, 53: { text: '毛毛雨', icon: '🌦️' },
+    55: { text: '强毛毛雨', icon: '🌧️' }, 61: { text: '小雨', icon: '🌧️' }, 63: { text: '中雨', icon: '🌧️' }, 65: { text: '大雨', icon: '🌧️' },
+    71: { text: '小雪', icon: '🌨️' }, 73: { text: '中雪', icon: '🌨️' }, 75: { text: '大雪', icon: '❄️' }, 80: { text: '阵雨', icon: '🌦️' },
+    81: { text: '强阵雨', icon: '🌧️' }, 82: { text: '暴雨', icon: '⛈️' }, 95: { text: '雷阵雨', icon: '⛈️' }, 96: { text: '雷阵雨伴冰雹', icon: '⛈️' }
+  };
+
+  const weekMap = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const grid = document.getElementById('weatherGrid');
+  const updateTimeEl = document.getElementById('updateTime');
+
+  // 核心修复：重新计算 SVG 内部坐标，留出底部空间
+  function generateChartSVG(probs) {
+    if (!probs || probs.length === 0) return '';
+    
+    const width = 280;
+    const chartHeight = 50; // 折线高度区域
+    const paddingX = 12;
+    const paddingTop = 8;
+    const paddingBottom = 18; // 给 X 轴文字留出空间
+    const totalHeight = chartHeight + paddingTop + paddingBottom;
+    
+    const stepX = (width - paddingX * 2) / (probs.length - 1);
+    const timeLabels = ['00', '03', '06', '09', '12', '15', '18', '21'];
+    
+    let points = [];
+    let labels = [];
+    let circles = [];
+    
+    probs.forEach((prob, i) => {
+      const x = paddingX + i * stepX;
+      // 坐标转换
+      const y = chartHeight + paddingTop - (prob / 100) * chartHeight;
+      
+      points.push(`${x},${y}`);
+      circles.push(`<circle cx="${x}" cy="${y}" r="2.5" class="chart-point" />`);
+      // 确保文字处于 viewBox 底部边缘之上
+      labels.push(`<text x="${x}" y="${totalHeight - 2}" class="chart-label">${timeLabels[i]}</text>`);
+    });
+
+    const pathD = `M ${points.join(' L ')}`;
+
+    return `
+      <div class="chart-title">分时降水概率</div>
+      <svg class="chart-svg" viewBox="0 0 ${width} ${totalHeight}">
+        <path d="${pathD}" class="chart-line" />
+        ${circles.join('')}
+        ${labels.join('')}
+      </svg>
+    `;
+  }
+
+  function renderCards(dataList, isRealtime = false) {
+    grid.innerHTML = '';
+    const todayStr = new Date().toLocaleDateString('zh-CN');
+
+    dataList.forEach((day, index) => {
+      const isToday = day.fullDateStr === todayStr;
+      const codeInfo = weatherCodeMap[day.code] || { text: '未知', icon: '❓' };
+      const isSecondRow = index >= 7;
+      const tooltipClass = isSecondRow ? ' tooltip-up' : '';
+
+      const card = document.createElement('div');
+      card.className = 'weather-card' + (isToday ? ' today' : '') + tooltipClass;
+
+      const chartHTML = generateChartSVG(day.precipProbs);
+
+      card.innerHTML = `
+        <div class="card-date">${day.month}月${day.day}日</div>
+        <div class="card-weekday">${weekMap[day.weekday]}</div>
+        <div class="card-icon">${codeInfo.icon}</div>
+        <div class="card-temp">${Math.round(day.tempMax)}°<span> / ${Math.round(day.tempMin)}°C</span></div>
+        <div class="card-condition">${codeInfo.text}</div>
+
+        <div class="tooltip">
+          <div class="tooltip-title">${day.month}月${day.day}日 · ${codeInfo.text}</div>
+          <div class="tooltip-row"><span>风向风力</span><span>${day.windDir} ${day.windSpeed}km/h</span></div>
+          <div class="tooltip-row"><span>相对湿度</span><span>${day.humidity}%</span></div>
+          <div class="tooltip-row"><span>日出 / 日落</span><span>${day.sunrise} / ${day.sunset}</span></div>
+          <div class="tooltip-row"><span>紫外线指数</span><span>${day.uvIndex}</span></div>
+          <div class="tooltip-tip">${day.tip}</div>
+          <div class="chart-container">
+            ${chartHTML}
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    const now = new Date();
+    const timeStr = `${now.getMonth()+1}月${now.getDate()}日 ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    
+    if (isRealtime) {
+      updateTimeEl.textContent = `实时数据 · 更新于 ${timeStr}`;
+      updateTimeEl.style.color = '#cdbf9e';
+    } else {
+      updateTimeEl.textContent = `离线气象数据 · 更新于 ${timeStr}`;
+      updateTimeEl.style.color = 'rgba(205, 191, 158, 0.5)';
+    }
+  }
+
+  function generateFallbackData() {
+    const data = [];
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - dayOfWeek);
+    weekStart.setHours(0,0,0,0);
+
+    const sampleWeather = [
+      { code: 2, tMax: 19, tMin: 13, wDir: '北风', wSpeed: 15, hum: 80, uv: '中等' },
+      { code: 3, tMax: 18, tMin: 13, wDir: '东北风', wSpeed: 10, hum: 75, uv: '较弱' },
+      { code: 61, tMax: 17, tMin: 11, wDir: '北风', wSpeed: 18, hum: 90, uv: '较弱' },
+      { code: 3, tMax: 15, tMin: 6, wDir: '西北风', wSpeed: 20, hum: 65, uv: '中等' },
+      { code: 1, tMax: 11, tMin: 5, wDir: '西北风', wSpeed: 12, hum: 55, uv: '较强' },
+      { code: 0, tMax: 12, tMin: 5, wDir: '西风', wSpeed: 8, hum: 50, uv: '中等' },
+      { code: 0, tMax: 14, tMin: 8, wDir: '北风', wSpeed: 10, hum: 60, uv: '中等' }
+    ];
+
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const s = sampleWeather[i % 7];
+      const mockProbs = Array.from({ length: 8 }, () => Math.floor(Math.random() * (s.code > 50 ? 80 : 20)));
+      
+      data.push({
+        fullDateStr: d.toLocaleDateString('zh-CN'),
+        month: d.getMonth() + 1, day: d.getDate(), weekday: d.getDay(),
+        code: s.code, tempMax: s.tMax, tempMin: s.tMin,
+        windDir: s.wDir, windSpeed: s.wSpeed, humidity: s.hum,
+        sunrise: '06:20', sunset: '16:56', uvIndex: s.uv,
+        tip: `${s.wDir} ${s.wSpeed}km/h，紫外线${s.uv}，相对湿度${s.hum}%。`,
+        precipProbs: mockProbs
+      });
+    }
+    return data;
+  }
+
+  async function fetchWeather() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    try {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - dayOfWeek);
+
+      const formatDateStr = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+
+      const startDateStr = formatDateStr(weekStart);
+      const endDate = new Date(weekStart);
+      endDate.setDate(weekStart.getDate() + 13);
+      const endDateStr = formatDateStr(endDate);
+
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
+        `&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant,relative_humidity_2m_max,uv_index_max` +
+        `&hourly=precipitation_probability` +
+        `&timezone=Asia/Shanghai&start_date=${startDateStr}&end_date=${endDateStr}`;
+
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error('网络请求失败');
+      const data = await response.json();
+      
+      const daily = data.daily;
+      const hourly = data.hourly;
+
+      const weatherList = daily.time.map((timeStr, i) => {
+        const d = new Date(timeStr);
+        
+        const windDirDeg = daily.wind_direction_10m_dominant[i];
+        let windDirText = '北风';
+        if (windDirDeg >= 22.5 && windDirDeg < 67.5) windDirText = '东北风';
+        else if (windDirDeg >= 67.5 && windDirDeg < 112.5) windDirText = '东风';
+        else if (windDirDeg >= 112.5 && windDirDeg < 157.5) windDirText = '东南风';
+        else if (windDirDeg >= 157.5 && windDirDeg < 202.5) windDirText = '南风';
+        else if (windDirDeg >= 202.5 && windDirDeg < 247.5) windDirText = '西南风';
+        else if (windDirDeg >= 247.5 && windDirDeg < 292.5) windDirText = '西风';
+        else if (windDirDeg >= 292.5 && windDirDeg < 337.5) windDirText = '西北风';
+
+        const formatTime = (isoStr) => isoStr.split('T')[1]?.substring(0, 5) || '--:--';
+        const uv = Math.round(daily.uv_index_max[i] || 0);
+        let uvTip = uv <= 2 ? '较弱' : uv <= 5 ? '中等' : uv <= 7 ? '较强' : '很强';
+
+        const dayProbs = [];
+        for (let h = 0; h < 24; h += 3) {
+          const hourTimeStr = `${timeStr}T${String(h).padStart(2, '0')}:00`;
+          const hourIndex = hourly.time.indexOf(hourTimeStr);
+          dayProbs.push(hourIndex !== -1 ? hourly.precipitation_probability[hourIndex] : 0);
+        }
+
+        return {
+          fullDateStr: d.toLocaleDateString('zh-CN'),
+          month: d.getMonth() + 1, day: d.getDate(), weekday: d.getDay(),
+          code: daily.weather_code[i], tempMax: daily.temperature_2m_max[i], tempMin: daily.temperature_2m_min[i],
+          sunrise: formatTime(daily.sunrise[i]), sunset: formatTime(daily.sunset[i]),
+          humidity: Math.round(daily.relative_humidity_2m_max[i] || 0), windDir: windDirText,
+          windSpeed: Math.round(daily.wind_speed_10m_max[i] || 0), uvIndex: uvTip,
+          tip: `${windDirText} ${Math.round(daily.wind_speed_10m_max[i] || 0)}km/h，紫外线${uvTip}，相对湿度${Math.round(daily.relative_humidity_2m_max[i] || 0)}%。`,
+          precipProbs: dayProbs
+        };
+      });
+
+      renderCards(weatherList, true);
+    } catch (error) {
+      console.warn('获取实时数据失败或超时:', error);
+    }
+  }
+
+  renderCards(generateFallbackData(), false);
+  fetchWeather();
+</script>
+
 </body>
 </html>

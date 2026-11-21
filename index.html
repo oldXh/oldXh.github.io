@@ -32,7 +32,7 @@
     color: #f2ead8;
   }
 
-  /* --- 校园地图背景 --- */
+  /* --- 地图背景容器 --- */
   .map-container {
     position: absolute;
     top: 0;
@@ -58,58 +58,103 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* 建筑填充色与描边 */
-    fill: rgba(255, 255, 255, 0.03); 
-    stroke: rgba(255, 255, 255, 0.4);
-    stroke-width: 1.5; 
-    opacity: 0.4; 
-    transition: opacity 0.5s ease, stroke 0.5s ease, fill 0.5s ease;
+    opacity: 0.9; 
+  }
+
+  /* --- 图层样式定义 --- */
+  
+  /* 绿地 */
+  .map-green {
+    fill: rgba(39, 174, 96, 0.05);
+    stroke: rgba(39, 174, 96, 0.15);
+    stroke-width: 1;
   }
   
-  .map-container:hover .map-svg {
-    opacity: 0.7;
-  }
-
-  /* --- LOD (多细节层次) 控制 --- */
-  .layer-buildings { transition: all 0.5s ease; }
-
-  .layer-details {
-    stroke-width: 1;
-    stroke: rgba(96, 165, 250, 0.4); /* 科技蓝道路 */
+  /* 道路 */
+  .map-road {
     fill: none;
-    opacity: 0;
-    transition: opacity 0.5s ease;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 16;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .map-road-line {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1;
+    stroke-dasharray: 10 10;
   }
 
-  .layer-labels {
-    opacity: 0;
-    transition: opacity 0.5s ease;
+  /* 建筑 */
+  .map-building {
+    fill: rgba(255, 255, 255, 0.05);
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 1.5;
+    transition: all 0.5s ease;
+  }
+  /* 特殊建筑 (明理楼等) */
+  .map-building-highlight {
+    fill: rgba(255, 255, 255, 0.08);
+    stroke: rgba(205, 191, 158, 0.5);
+  }
+
+  /* 跑道与球场 */
+  .track-red {
+    fill: rgba(231, 76, 60, 0.15);
+    stroke: rgba(231, 76, 60, 0.4);
+    stroke-width: 1;
+  }
+  .track-green {
+    fill: rgba(46, 204, 113, 0.15);
+    stroke: rgba(46, 204, 113, 0.3);
+    stroke-width: 1;
+  }
+  .court-blue {
+    fill: rgba(52, 152, 219, 0.15);
+    stroke: rgba(52, 152, 219, 0.4);
+    stroke-width: 1;
+  }
+
+  /* 水系 */
+  .water {
+    fill: rgba(96, 165, 250, 0.15);
+    stroke: rgba(96, 165, 250, 0.4);
+    stroke-width: 1;
+  }
+
+  /* 文字标签 (低透明度) */
+  .map-label {
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    fill: #60a5fa;
     font-size: 14px;
+    fill: #ffffff;
+    opacity: 0.4; /* 按要求降低透明度 */
     text-anchor: middle;
-    font-weight: bold;
     letter-spacing: 2px;
     pointer-events: none;
+    transition: all 0.5s ease;
   }
-
-  .layer-trees {
+  .map-label-title {
+    font-size: 20px;
+    font-weight: bold;
+    opacity: 0.6;
     fill: #cdbf9e;
-    stroke: none;
-    opacity: 0;
-    transition: opacity 0.5s ease;
   }
 
-  /* 放大触发状态：细节浮现，建筑变蓝 */
-  .show-details .layer-details { opacity: 1; }
-  .show-details .layer-labels { opacity: 1; }
-  .show-details .layer-trees { opacity: 0.6; }
-  
-  .show-details .map-svg { 
+  /* --- 悬停及缩放 LOD 细节 (放大到一定程度显现) --- */
+  .show-details .map-building { 
     stroke: #60a5fa; 
-    fill: rgba(59, 130, 246, 0.05); 
-    opacity: 1; 
+    fill: rgba(59, 130, 246, 0.1); 
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
   }
+  .show-details .map-label { 
+    opacity: 0.9; 
+    fill: #cdbf9e; 
+    text-shadow: 0 0 5px #000;
+  }
+  .show-details .map-road { stroke: rgba(96, 165, 250, 0.2); }
+  .show-details .track-red { stroke: #ef4444; }
+  .show-details .court-blue { stroke: #3b82f6; }
+  .show-details .water { stroke: #60a5fa; }
 
   /* --- 顶部导航栏 --- */
   .topbar {
@@ -206,86 +251,119 @@
     
     <div class="map-container" id="mapContainer">
       <div class="map-inner" id="mapInner">
-        <!-- 细节丰富的金山世外校园平面图 SVG -->
-        <svg class="map-svg" viewBox="0 0 2000 1000" xmlns="http://www.w3.org/2000/svg">
+        <!-- 金山世外真实布局图 -->
+        <svg class="map-svg" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg">
           
-          <!-- 基础建筑层 -->
-          <g class="layer-buildings">
-            <!-- 学校主边界围墙 -->
-            <path d="M 200,200 L 1800,200 L 1800,800 L 200,800 Z" stroke-dasharray="10 5" stroke-width="2" />
+          <!-- 0. 全局绿地背景 -->
+          <rect x="0" y="0" width="1600" height="1000" fill="rgba(30,40,30,0.2)" />
+          
+          <!-- 1. 道路网络 -->
+          <g>
+            <!-- 中轴主路 -->
+            <path class="map-road" d="M 800,0 L 800,1000" />
+            <path class="map-road-line" d="M 800,0 L 800,1000" />
             
-            <!-- 教学楼 (L型) -->
-            <path d="M 300,300 L 700,300 L 700,450 L 500,450 L 500,600 L 300,600 Z" />
-            <!-- 实验楼 -->
-            <rect x="750" y="300" width="200" height="150" />
-            <!-- 图书馆 (圆形/多边形) -->
-            <path d="M 1050,375 L 1100,300 L 1200,300 L 1250,375 L 1200,450 L 1100,450 Z" />
-            <!-- 行政楼 -->
-            <rect x="1350" y="300" width="250" height="120" />
-            <!-- 食堂 -->
-            <rect x="300" y="650" width="300" height="100" />
-            <!-- 学生宿舍楼群 -->
-            <rect x="700" y="650" width="80" height="120" />
-            <rect x="820" y="650" width="80" height="120" />
-            <rect x="940" y="650" width="80" height="120" />
-            <!-- 体育馆 -->
-            <rect x="1300" y="600" width="300" height="150" />
+            <!-- 横向主路 -->
+            <path class="map-road" d="M 0,680 L 1600,680" />
+            <path class="map-road-line" d="M 0,680 L 1600,680" />
             
-            <!-- 操场 (标准跑道) -->
-            <!-- 外圈跑道 -->
-            <path d="M 1350,480 L 1650,480 A 60 60 0 0 1 1650 600 L 1350,600 A 60 60 0 0 1 1350 480 Z" />
-            <!-- 内圈草坪 -->
-            <path d="M 1380,500 L 1620,500 A 40 40 0 0 1 1620 580 L 1380,580 A 40 40 0 0 1 1380 500 Z" />
+            <!-- 西侧入口道路 -->
+            <path class="map-road" d="M 0,550 L 200,550 L 300,450" />
+            <path class="map-road-line" d="M 0,550 L 200,550 L 300,450" />
+            
+            <!-- 内部环形支路 -->
+            <path class="map-road" d="M 300,450 Q 500,300 700,300 L 1000,300 Q 1100,400 1100,500 L 1100,650" />
           </g>
 
-          <!-- 细节层 (放大时显示) -->
-          <g class="layer-details">
-            <!-- 校园道路主干道 -->
-            <path d="M 200,620 L 1800,620" stroke-width="15" stroke-linecap="round" />
-            <path d="M 720,200 L 720,620" stroke-width="10" stroke-linecap="round" />
-            <path d="M 1280,200 L 1280,800" stroke-width="10" stroke-linecap="round" />
-            <path d="M 720,480 L 1280,480" stroke-width="8" stroke-linecap="round" />
+          <!-- 2. 左侧大型操场 -->
+          <g>
+            <path class="track-red" d="M 150,280 L 450,280 A 150,150 0 0 1 450,580 L 150,580 A 150,150 0 0 1 150,280 Z" />
+            <path class="track-green" d="M 180,310 L 420,310 A 120,120 0 0 1 420,550 L 180,550 A 120,120 0 0 1 180,310 Z" />
+            <!-- 跑道内圈线 -->
+            <line x1="200" y1="280" x2="200" y2="580" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <line x1="400" y1="280" x2="400" y2="580" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+          </g>
+
+          <!-- 3. 右侧操场 -->
+          <g>
+            <path class="track-red" d="M 1150,220 L 1350,220 A 130,130 0 0 1 1350,480 L 1150,480 A 130,130 0 0 1 1150,220 Z" />
+            <path class="track-green" d="M 1180,250 L 1320,250 A 100,100 0 0 1 1320,450 L 1180,450 A 100,100 0 0 1 1180,250 Z" />
+          </g>
+
+          <!-- 4. 建筑群 (参考卫星图轮廓) -->
+          <g>
+            <!-- 左上角宿舍/综合楼 -->
+            <path class="map-building" d="M 120,150 L 400,120 L 450,220 L 400,320 L 120,320 Z" />
+            <rect class="map-building" x="250" y="250" width="100" height="40" />
             
-            <!-- 跑道细节线 -->
-            <path d="M 1360,490 L 1640,490 M 1360,590 L 1640,590" stroke="#ef4444" stroke-width="2" />
-            <line x1="1480" y1="480" x2="1480" y2="600" stroke="#60a5fa" stroke-width="2" />
-            <line x1="1520" y1="480" x2="1520" y2="600" stroke="#60a5fa" stroke-width="2" />
+            <!-- 顶部教学楼块 -->
+            <path class="map-building" d="M 600,120 L 900,120 L 900,200 L 600,200 Z" />
+            <path class="map-building" d="M 950,120 L 1150,120 L 1150,200 L 950,200 Z" />
+
+            <!-- 明理楼 (中间偏上) -->
+            <path class="map-building map-building-highlight" d="M 650,240 L 950,240 L 950,350 L 650,350 Z" />
+            <!-- 内部庭院 -->
+            <rect x="700" y="270" width="200" height="50" fill="rgba(0,0,0,0.3)" />
+
+            <!-- 中部核心教学楼群 (E型结构) -->
+            <path class="map-building" d="M 600,420 L 1100,420 L 1100,500 L 600,500 Z" />
+            <path class="map-building" d="M 600,530 L 1100,530 L 1100,610 L 600,610 Z" />
+            <!-- 中间连接走廊 -->
+            <rect class="map-building" x="750" y="490" width="200" height="40" />
+            
+            <!-- 教学楼中间的绿化 -->
+            <rect class="map-green" x="620" y="510" width="120" height="10" />
           </g>
 
-          <!-- 树木绿化层 (放大时显示) -->
-          <g class="layer-trees">
-            <!-- 主路两旁的树木 -->
-            <circle cx="250" cy="610" r="8" />
-            <circle cx="350" cy="610" r="8" />
-            <circle cx="450" cy="610" r="8" />
-            <circle cx="550" cy="610" r="8" />
-            <circle cx="1000" cy="610" r="8" />
-            <circle cx="1100" cy="610" r="8" />
-            <circle cx="1200" cy="610" r="8" />
-            <!-- 操场周围树木 -->
-            <circle cx="1300" cy="480" r="10" />
-            <circle cx="1300" cy="540" r="10" />
-            <circle cx="1300" cy="600" r="10" />
-            <circle cx="1700" cy="480" r="10" />
-            <circle cx="1700" cy="540" r="10" />
-            <circle cx="1700" cy="600" r="10" />
-            <!-- 教学楼前广场 -->
-            <circle cx="400" cy="250" r="12" />
-            <circle cx="500" cy="250" r="12" />
-            <circle cx="600" cy="250" r="12" />
+          <!-- 5. 左下角大型球场区 -->
+          <g>
+            <rect class="court-blue" x="100" y="750" width="350" height="180" rx="5" />
+            <!-- 划分球场小块 -->
+            <line x1="200" y1="750" x2="200" y2="930" stroke="rgba(52, 152, 219, 0.4)" stroke-width="2" />
+            <line x1="300" y1="750" x2="300" y2="930" stroke="rgba(52, 152, 219, 0.4)" stroke-width="2" />
+            <line x1="100" y1="840" x2="450" y2="840" stroke="rgba(52, 152, 219, 0.4)" stroke-width="2" />
           </g>
 
-          <!-- 建筑标签层 (放大时显示) -->
-          <g class="layer-labels">
-            <text x="450" y="450">教 学 楼</text>
-            <text x="850" y="385">实 验 楼</text>
-            <text x="1150" y="385">图 书 馆</text>
-            <text x="1475" y="370">行 政 楼</text>
-            <text x="450" y="710">食 堂</text>
-            <text x="810" y="720">宿 舍 区</text>
-            <text x="1450" y="685">体 育 馆</text>
-            <text x="1500" y="550" fill="#ef4444">操 场</text>
-            <text x="1000" y="240" font-size="20" fill="#cdbf9e">金山世外校园</text>
+          <!-- 6. 右下角幼儿园与蓝色球场 -->
+          <g>
+            <!-- 幼儿园建筑 -->
+            <path class="map-building" d="M 1000,750 L 1350,750 L 1350,850 L 1000,850 Z" />
+            <!-- 幼儿园前的水池/景观 -->
+            <path class="water" d="M 1050,880 Q 1150,850 1250,880 Q 1300,920 1200,950 Q 1100,930 1050,880 Z" />
+            
+            <!-- 右侧蓝色球场 -->
+            <rect class="court-blue" x="1150" y="580" width="200" height="80" rx="5" />
+            <line x1="1250" y1="580" x2="1250" y2="660" stroke="rgba(52, 152, 219, 0.4)" stroke-width="2" />
+          </g>
+
+          <!-- 7. 南门及中轴广场 -->
+          <g>
+            <!-- 中轴广场 (椭圆嵌套) -->
+            <ellipse class="map-building" cx="800" cy="800" rx="80" ry="120" />
+            <ellipse cx="800" cy="800" rx="50" ry="90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+            <ellipse cx="800" cy="800" rx="20" ry="40" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+          </g>
+
+          <!-- 8. 文字标签 (低透明度) -->
+          <g>
+            <!-- 大门 -->
+            <text class="map-label" x="100" y="540">西门</text>
+            <text class="map-label" x="800" y="960">南门</text>
+            
+            <!-- 操场 -->
+            <text class="map-label" x="300" y="640">大操场</text>
+            <text class="map-label" x="1250" y="520">操场</text>
+            <text class="map-label" x="270" y="950">室外球场</text>
+            
+            <!-- 建筑 -->
+            <text class="map-label" x="280" y="220">宿舍/生活区</text>
+            <text class="map-label" x="750" y="160">教学区</text>
+            <text class="map-label" x="800" y="290">明理楼</text>
+            <text class="map-label" x="850" y="470">上海金山区世外学校</text>
+            <text class="map-label" x="850" y="570">核心教学群</text>
+            <text class="map-label" x="1250" y="620">蓝球场</text>
+            <text class="map-label" x="1175" y="800">上海金山区世界外国语幼儿园</text>
+            <text class="map-label" x="800" y="800" style="opacity: 0.2;">中轴广场</text>
           </g>
 
         </svg>
@@ -318,7 +396,7 @@
   const mapInner = document.getElementById('mapInner');
   const mapSvg = document.querySelector('.map-svg');
 
-  // 初始缩放设为 1.2，展示全貌
+  // 初始缩放，铺满屏幕
   let scale = 1.2; 
   
   let panX = 0, panY = 0;
@@ -327,9 +405,9 @@
   let parallaxX = 0, parallaxY = 0;
   let targetParallaxX = 0, targetParallaxY = 0;
 
-  // LOD 细节控制，校园地图放大到 1.8 倍就显示文字和树木
+  // LOD 细节控制，放大到 1.5 倍触发
   function updateLOD() {
-    if (scale > 1.8) {
+    if (scale > 1.5) {
       mapSvg.classList.add('show-details');
     } else {
       mapSvg.classList.remove('show-details');
@@ -370,7 +448,7 @@
   }
   animate();
 
-  // 鼠标移动视差
+  // 鼠标视差
   container.addEventListener('mousemove', (e) => {
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -378,28 +456,26 @@
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // 校园地图视差幅度稍小一点，更符合平面图感觉
-    const parallaxFactor = scale > 1.8 ? 0.03 : 0.1; 
+    // 平面图视差微调
+    const parallaxFactor = scale > 1.5 ? 0.02 : 0.08; 
     
     targetParallaxX = -(mouseX - centerX) * parallaxFactor;
     targetParallaxY = -(mouseY - centerY) * parallaxFactor;
   });
 
-  // 鼠标离开回正
   container.addEventListener('mouseleave', () => {
     targetParallaxX = 0;
     targetParallaxY = 0;
   });
 
-  // 滚轮缩放
+  // 滚轮缩放（固定锚点，绝不乱弹）
   container.addEventListener('wheel', (e) => {
     e.preventDefault();
     
     const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1;
     const newScale = scale * zoomAmount;
 
-    // 校园地图缩放范围稍微收紧，最大放 5 倍
-    if (newScale < 0.6 || newScale > 5) return;
+    if (newScale < 0.6 || newScale > 6) return;
 
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -408,13 +484,13 @@
     const currentX = panX + parallaxX;
     const currentY = panY + parallaxY;
     
-    // 计算鼠标在地图上的真实比例坐标
+    // 计算鼠标下的真实地图坐标
     const mapPointX = (mouseX - currentX) / scale;
     const mapPointY = (mouseY - currentY) / scale;
 
     scale = newScale;
 
-    // 固定鼠标位置进行缩放
+    // 锁定坐标位置
     targetPanX = mouseX - mapPointX * scale;
     targetPanY = mouseY - mapPointY * scale;
 

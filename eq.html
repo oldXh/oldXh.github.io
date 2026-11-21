@@ -51,7 +51,7 @@
 
   /* --- 左侧输入区 --- */
   .input-panel {
-    flex: 1.1; /* 稍微加宽以适应复杂的键盘 */
+    flex: 1.1; 
     display: flex;
     flex-direction: column;
     padding: 25px 30px;
@@ -91,11 +91,11 @@
   }
   #equation-input::placeholder { color: rgba(205, 191, 158, 0.3); font-size: 24px; }
 
-  /* --- 软键盘区 (参考 Desmos) --- */
+  /* --- 软键盘区 (8列网格：左4代数，右4数字) --- */
   .keyboard {
     display: grid;
-    grid-template-columns: repeat(6, 1fr); /* 6列布局 */
-    gap: 8px;
+    grid-template-columns: repeat(8, 1fr); 
+    gap: 10px 8px;
     flex-grow: 1;
     max-height: 520px;
   }
@@ -122,8 +122,11 @@
   .key-operator { color: #60a5fa; }
   .key-action { color: #ef4444; }
   
+  /* 等号特殊高亮 */
+  .key-equals { color: #93c5fd; font-size: 22px; font-weight: bold; }
+
   .key-submit {
-    grid-column: span 6;
+    grid-column: span 8;
     background: rgba(37, 99, 235, 0.2);
     border-color: rgba(37, 99, 235, 0.5);
     color: #93c5fd;
@@ -198,7 +201,6 @@
 
   <div class="workspace">
     
-    <!-- 左侧：输入与高级键盘 -->
     <div class="input-panel">
       <div class="panel-title">输入方程</div>
       
@@ -206,48 +208,52 @@
         <input type="text" id="equation-input" placeholder="例如: 3x - 1 = 0" autocomplete="off" spellcheck="false">
       </div>
 
+      <!-- 键盘布局参考 Desmos -->
       <div class="keyboard">
-        <!-- 第1排：字母与代数 -->
+        <!-- 第1排 -->
         <div class="key-btn math" data-val="x">x</div>
         <div class="key-btn math" data-val="y">y</div>
         <div class="key-btn math" data-val="^2">a²</div>
         <div class="key-btn math" data-val="^">aᵇ</div>
-        <div class="key-btn math" data-val="abs(">|a|</div>
-        <div class="key-btn math" data-val="pi">π</div>
-
-        <!-- 第2排：括号与比较符 -->
-        <div class="key-btn math" data-val="(">(</div>
-        <div class="key-btn math" data-val=")">)</div>
-        <div class="key-btn math" data-val="<">&lt;</div>
-        <div class="key-btn math" data-val=">">&gt;</div>
-        <div class="key-btn math" data-val="<=">≤</div>
-        <div class="key-btn math" data-val=">=">≥</div>
-
-        <!-- 第3排：数字与基础运算 -->
         <div class="key-btn" data-val="7">7</div>
         <div class="key-btn" data-val="8">8</div>
         <div class="key-btn" data-val="9">9</div>
         <div class="key-btn key-operator" data-val="/">÷</div>
-        <div class="key-btn key-action" id="btn-clear">C</div>
-        <div class="key-btn key-action" id="btn-backspace">⌫</div>
 
-        <!-- 第4排 -->
+        <!-- 第2排 -->
+        <div class="key-btn math" data-val="(">(</div>
+        <div class="key-btn math" data-val=")">)</div>
+        <div class="key-btn math" data-val="<">&lt;</div>
+        <div class="key-btn math" data-val=">">&gt;</div>
         <div class="key-btn" data-val="4">4</div>
         <div class="key-btn" data-val="5">5</div>
         <div class="key-btn" data-val="6">6</div>
         <div class="key-btn key-operator" data-val="*">×</div>
-        <div class="key-btn key-operator" data-val="-">-</div>
-        <div class="key-btn key-operator" data-val="+">+</div>
 
-        <!-- 第5排 -->
+        <!-- 第3排 -->
+        <div class="key-btn math" data-val="abs(">|a|</div>
+        <div class="key-btn math" data-val=",">,</div>
+        <div class="key-btn math" data-val="<=">≤</div>
+        <div class="key-btn math" data-val=">=">≥</div>
         <div class="key-btn" data-val="1">1</div>
         <div class="key-btn" data-val="2">2</div>
         <div class="key-btn" data-val="3">3</div>
+        <div class="key-btn key-operator" data-val="-">-</div>
+
+        <!-- 第4排 -->
+        <div class="key-btn math" data-val="sqrt(">√</div>
+        <div class="key-btn math" data-val="pi">π</div>
+        <div class="key-btn key-action" id="btn-clear">C</div>
+        <div class="key-btn key-action" id="btn-backspace">⌫</div>
         <div class="key-btn" data-val="0">0</div>
         <div class="key-btn" data-val=".">.</div>
-        <div class="key-btn key-operator" data-val="=">=</div>
+        
+        <!-- 等号按键 -->
+        <div class="key-btn key-operator key-equals" data-val="=">=</div>
+        
+        <div class="key-btn key-operator" data-val="+">+</div>
 
-        <!-- 第6排：提交 -->
+        <!-- 提交按钮 -->
         <div class="key-btn key-submit" id="btn-submit">开 始 求 解</div>
       </div>
     </div>
@@ -330,20 +336,17 @@
     });
   }
 
-  // 核心辅助函数：将浮点数智能转换回分数（如果分母过大则保留小数）
+  // 辅助函数：分数格式化
   function formatResult(value) {
-    if (Math.abs(value) < 1e-9) return "0"; // 处理极小的浮点误差
+    if (Math.abs(value) < 1e-9) return "0"; 
     try {
       const frac = math.fraction(value);
-      // 如果分母太大（说明是无理数的近似值），则直接返回带4位小数的结果
       if (frac.d > 100) {
         return parseFloat(value.toFixed(4)).toString();
       }
-      // 如果是整数，直接返回整数
       if (frac.d === 1) {
         return frac.n.toString();
       }
-      // 否则返回分数格式
       return math.format(frac, { fraction: 'ratio' });
     } catch(e) {
       return parseFloat(value.toFixed(4)).toString();
@@ -356,7 +359,7 @@
 
     terminal.innerHTML = '';
     
-    // 预处理：符号替换
+    // 符号预处理
     let eqStr = rawInput
       .replace(/\s+/g, '')
       .replace(/X/g, 'x')
@@ -367,7 +370,6 @@
       .replace(/×/g, '*')
       .replace(/÷/g, '/');
     
-    // 处理比较符（如果是不等式，目前终端不支持完整解析，给个提示）
     if (eqStr.includes('<') || eqStr.includes('>') || eqStr.includes('<=') || eqStr.includes('>=')) {
       await printToTerminal(`[提示] 当前版本主要针对等式求解，不等式计算可能不准确。`, 'term-error');
     }
@@ -389,7 +391,6 @@
       const fExpr = `(${left}) - (${right})`;
       const f = math.compile(fExpr);
       
-      // 测试方程是否合法
       const testVal = f.evaluate({ x: 123.456 });
       if (typeof testVal !== 'number' || isNaN(testVal)) {
         throw new Error("无法识别的数学表达式");
@@ -397,7 +398,6 @@
 
       await printToTerminal(`> 移项整理得: f(x) = ${fExpr} = 0`);
 
-      // 反推系数
       const c = f.evaluate({ x: 0 });
       const f1 = f.evaluate({ x: 1 });
       const f_1 = f.evaluate({ x: -1 });
@@ -408,7 +408,6 @@
       const EPSILON = 1e-8;
 
       if (Math.abs(a) > EPSILON) {
-        // 一元二次方程
         await printToTerminal(`> 识别为 [一元二次方程] ax² + bx + c = 0`);
         await printToTerminal(`  系数: a = ${formatResult(a)}, b = ${formatResult(b)}, c = ${formatResult(c)}`);
         
@@ -431,14 +430,12 @@
         }
       } 
       else if (Math.abs(b) > EPSILON) {
-        // 一元一次方程
         await printToTerminal(`> 识别为 [一元一次方程] bx + c = 0`);
         await printToTerminal(`> 移项得: ${formatResult(b)}x = ${formatResult(-c)}`);
         const x = -c / b;
         await printToTerminal(`\n[答案] x = ${formatResult(x)}`, 'term-answer');
       } 
       else {
-        // 常数或更高次
         if (Math.abs(c) < EPSILON) {
           await printToTerminal(`> 恒等式，x 取任意实数。`);
           await printToTerminal(`\n[答案] x ∈ R`, 'term-answer');

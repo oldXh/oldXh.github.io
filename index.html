@@ -146,7 +146,7 @@
   .topbar {
     position: absolute;
     left: 0;
-    top: 30px; /* 往下移了30px */
+    top: 30px; 
     width: 100%;
     height: 30px;
     background: linear-gradient(90deg, rgba(30,58,138,0.8) 0%, rgba(37,99,235,0.8) 50%, rgba(30,58,138,0.8) 100%);
@@ -243,7 +243,7 @@
           <!-- 0. 绿地底色 -->
           <rect x="0" y="0" width="1600" height="1000" fill="rgba(30,40,30,0.2)" />
           
-          <!-- 1. 道路 (保留西门支路) -->
+          <!-- 1. 道路 (西门支路) -->
           <g>
             <path class="map-road" d="M 0,400 L 250,400 Q 350,400 400,350" />
             <path class="map-road-line" d="M 0,400 L 250,400 Q 350,400 400,350" />
@@ -265,31 +265,43 @@
 
           <!-- 4. 核心建筑群 -->
           <g>
-            <!-- 左上角：食堂&体育馆 -->
-            <path class="map-building" d="M 100,50 L 350,50 L 420,120 L 420,220 L 100,220 Z" />
+            <!-- ① 食堂&体育馆 (左上角，不规则多边形带内部结构) -->
+            <path class="map-building" d="M 80,50 L 320,30 L 400,150 L 150,190 Z" />
+            <!-- 内部看台/场地线条 -->
+            <ellipse cx="200" cy="100" rx="40" ry="20" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+            <line x1="160" y1="140" x2="360" y2="110" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <line x1="170" y1="160" x2="370" y2="130" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
             
-            <!-- 左侧偏上：明理楼 -->
-            <rect class="map-building map-building-highlight" x="450" y="180" width="250" height="70" rx="5" />
+            <!-- ② 小剧场 (紧挨着食堂右下角) -->
+            <path class="map-building" d="M 370,160 L 460,140 L 490,200 L 400,220 Z" />
+
+            <!-- 左侧偏中：明理楼 (独立长条) -->
+            <path class="map-building map-building-highlight" d="M 440,240 L 600,220 L 620,280 L 460,300 Z" />
             
-            <!-- 右侧偏上：宿舍区 -->
+            <!-- 右侧偏上：宿舍区 (两栋平行) -->
             <path class="map-building" d="M 950,80 L 1300,80 L 1350,130 L 1350,160 L 900,160 Z" />
             <path class="map-building" d="M 980,190 L 1300,190 L 1350,240 L 1350,270 L 930,270 Z" />
 
-            <!-- 核心教学群：三栋等大楼，错落连体（根据标注图修正） -->
+            <!-- 核心教学群：三栋等大楼，错落连体 (S型布局) -->
             <g class="map-building">
-              <!-- 第一栋（上），偏右 -->
+              <!-- 顶部第一栋 -->
               <rect x="580" y="340" width="450" height="70" rx="5" />
-              <!-- 左连廊 -->
-              <rect x="540" y="340" width="40" height="180" />
-              <!-- 第二栋（中），偏左 -->
-              <rect x="500" y="450" width="450" height="70" rx="5" />
-              <!-- 右连廊 -->
-              <rect x="950" y="450" width="40" height="150" />
-              <!-- 第三栋（下），偏右 -->
-              <rect x="580" y="530" width="450" height="70" rx="5" />
+              <!-- 左侧连廊 -->
+              <rect x="520" y="340" width="40" height="200" />
+              
+              <!-- 中间第二栋 (偏左) -->
+              <rect x="480" y="480" width="450" height="70" rx="5" />
+              <!-- 内部镂空庭院/缺口 -->
+              <rect x="700" y="470" width="100" height="90" fill="rgba(0,0,0,0.2)" stroke="rgba(255,255,255,0.2)" />
+              
+              <!-- 右侧连廊 -->
+              <rect x="940" y="480" width="40" height="150" />
+              
+              <!-- 底部第三栋 (偏右) -->
+              <rect x="580" y="570" width="450" height="70" rx="5" />
             </g>
             
-            <!-- 中轴线上方的景观广场 -->
+            <!-- 中轴线景观广场 -->
             <ellipse cx="800" cy="280" rx="60" ry="30" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
           </g>
 
@@ -324,13 +336,14 @@
             <text class="map-label" x="1225" y="380">小操场</text>
             <text class="map-label" x="270" y="680">室外球场</text>
             
-            <text class="map-label" x="260" y="130">食堂&体育馆</text>
+            <!-- ①②及建筑标签 -->
+            <text class="map-label" x="230" y="100">① 食堂&体育馆</text>
+            <text class="map-label" x="420" y="180">② 小剧场</text>
             <text class="map-label" x="1150" y="130">宿舍</text>
-            <text class="map-label" x="575" y="220">明理楼</text>
+            <text class="map-label" x="530" y="260">明理楼</text>
             
-            <!-- 核心建筑群标签 -->
-            <text class="map-label" x="805" y="450">敏思楼</text>
-            <text class="map-label" x="805" y="565">核心教学群</text>
+            <!-- 核心教学群标签 -->
+            <text class="map-label" x="805" y="450">敏思楼 (核心教学群)</text>
             
             <text class="map-label" x="1300" y="730">蓝球场</text>
             <text class="map-label" x="1150" y="790">世界外国语幼儿园</text>

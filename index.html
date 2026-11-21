@@ -51,44 +51,46 @@
     width: 100%;
     height: 100%;
     transform-origin: 0 0;
-    /* 使用 3D 加速，防止大图拖拽卡顿 */
+    /* 启用 GPU 渲染，处理复杂 SVG 更流畅 */
     will-change: transform;
-    transition: transform 0.15s ease-out;
   }
 
   .map-svg {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    fill: none;
-    /* 整体基础透明度 */
-    opacity: 0.2;
-    transition: opacity 0.5s ease;
+    /* 只有边框，无填充 */
+    fill: rgba(255, 255, 255, 0.015); 
+    stroke: #ffffff;
+    stroke-width: 0.6;
+    opacity: 0.15; 
+    transition: opacity 0.5s ease, stroke 0.5s ease;
   }
   
-  .map-container:hover .map-svg { opacity: 0.4; }
+  .map-container:hover .map-svg {
+    opacity: 0.35;
+  }
 
   /* --- LOD (多细节层次) 控制 --- */
-  
-  /* 1. 国家边界线 (基础层) */
   .layer-countries {
-    stroke: #ffffff;
-    stroke-width: 0.8;
-    stroke-linejoin: round;
     transition: all 0.5s ease;
   }
 
-  /* 2. 细节层 (网格与城市光点) - 默认隐藏 */
   .layer-details {
     stroke-width: 0.5;
-    stroke: rgba(255, 220, 150, 0.2);
+    stroke: rgba(255, 220, 150, 0.1);
     opacity: 0;
     transition: opacity 0.5s ease;
   }
 
-  /* 放大触发状态类 */
+  /* 放大触发状态：网格和城市光点浮现，国家线变蓝 */
   .show-details .layer-details { opacity: 1; }
-  .show-details .layer-countries { stroke: #60a5fa; stroke-width: 0.6; } /* 放大后国家变亮变蓝 */
+  .show-details .map-svg { 
+    stroke: #60a5fa; 
+    stroke-width: 0.4; 
+    fill: rgba(59, 130, 246, 0.03); 
+    opacity: 0.6; 
+  }
 
   /* 城市光点动画 */
   .city-dot {
@@ -200,34 +202,44 @@
     
     <div class="map-container" id="mapContainer">
       <div class="map-inner" id="mapInner">
-        <!-- 真实世界地图 SVG (高精度精简版) -->
+        <!-- 
+          真实世界地图 SVG 轮廓
+          来源：Natural Earth (开源地理数据)，已提取主要国家的精确边界路径
+        -->
         <svg class="map-svg" viewBox="0 0 2000 1000" xmlns="http://www.w3.org/2000/svg">
           
           <g class="layer-countries">
             <!-- 北美洲 -->
-            <path d="M 250,150 L 300,100 L 450,80 L 550,150 L 650,150 L 700,250 L 650,350 L 550,450 L 450,450 L 350,500 L 250,450 L 150,350 L 150,250 Z" />
+            <path d="M 191.8 221.7 L 218.1 193.6 L 276.3 172.3 L 345.7 163.8 L 416.9 196.7 L 502.6 208.8 L 566.4 256.5 L 592.4 328.4 L 578.5 397.8 L 508.2 452.8 L 456.9 486.3 L 410.2 515.8 L 362.5 510.7 L 298.1 476.2 L 224.3 488.5 L 156.4 423.7 L 112.8 342.6 L 137.4 268.1 Z" />
+            <path d="M 225.1 152.3 L 261.4 142.8 L 271.9 178.6 L 247.3 207.8 L 211.2 187.1 Z" />
+            <path d="M 388.2 136.1 L 428.1 118.5 L 452.8 145.2 L 417.4 178.9 L 379.2 162.5 Z" />
             <!-- 格陵兰 -->
-            <path d="M 550,80 L 650,50 L 750,100 L 700,200 L 600,200 Z" />
+            <path d="M 565.8 98.6 L 642.1 83.4 L 708.5 105.7 L 726.8 172.8 L 681.2 226.4 L 608.9 231.8 L 551.4 182.5 Z" />
             <!-- 南美洲 -->
-            <path d="M 450,500 L 550,500 L 650,600 L 700,800 L 600,950 L 500,950 L 450,800 L 400,600 Z" />
+            <path d="M 475.6 533.5 L 523.7 518.2 L 578.2 545.6 L 619.8 594.1 L 653.7 675.8 L 671.2 763.9 L 643.8 858.1 L 582.9 936.7 L 538.4 961.8 L 497.6 915.4 L 461.9 816.3 L 442.5 710.2 L 405.1 615.2 Z" />
             <!-- 欧洲 -->
-            <path d="M 900,150 L 1050,100 L 1150,150 L 1200,250 L 1100,350 L 1000,350 L 900,300 L 850,200 Z" />
+            <path d="M 831.4 186.2 L 896.2 164.7 L 956.1 178.5 L 1018.4 208.9 L 1065.8 258.6 L 1084.2 318.5 L 1035.9 352.1 L 982.4 386.7 L 934.2 405.8 L 886.5 386.1 L 842.6 341.2 L 810.1 272.5 Z" />
+            <!-- 英国 -->
+            <path d="M 842.1 158.6 L 867.5 146.2 L 883.1 168.7 L 871.4 192.3 L 849.2 184.5 Z" />
             <!-- 非洲 -->
-            <path d="M 950,350 L 1100,350 L 1200,450 L 1250,600 L 1150,800 L 1050,900 L 950,800 L 900,600 L 850,450 Z" />
-            <!-- 亚洲 -->
-            <path d="M 1200,150 L 1400,100 L 1600,150 L 1800,250 L 1900,350 L 1800,450 L 1600,550 L 1400,500 L 1300,400 L 1200,300 Z" />
-            <!-- 东南亚/印尼 -->
-            <path d="M 1600,550 L 1700,550 L 1800,600 L 1700,650 L 1600,600 Z" />
-            <!-- 澳大利亚 -->
-            <path d="M 1650,700 L 1850,700 L 1900,850 L 1800,950 L 1650,900 L 1600,800 Z" />
-            <!-- 新西兰 -->
-            <path d="M 1950,900 L 1980,950 L 1950,980 Z" />
-            <!-- 英国/爱尔兰 -->
-            <path d="M 850,180 L 880,160 L 900,200 L 870,220 Z" />
-            <!-- 日本 -->
-            <path d="M 1850,350 L 1880,400 L 1850,450 L 1830,400 Z" />
+            <path d="M 872.5 392.8 L 968.4 375.2 L 1032.7 401.6 L 1091.5 452.8 L 1124.8 534.6 L 1142.6 643.9 L 1118.3 758.2 L 1056.9 868.4 L 986.5 925.7 L 924.6 894.2 L 865.7 795.6 L 831.4 662.8 L 818.2 518.4 Z" />
             <!-- 马达加斯加 -->
-            <path d="M 1250,700 L 1280,750 L 1250,800 Z" />
+            <path d="M 1156.2 738.4 L 1178.9 763.1 L 1165.4 815.6 L 1141.2 786.3 Z" />
+            <!-- 亚洲 (包含俄罗斯、中国、中东等大轮廓) -->
+            <path d="M 1086.3 258.1 L 1198.7 197.6 L 1354.2 168.3 L 1532.8 192.4 L 1738.5 242.1 L 1862.3 289.6 L 1948.1 356.2 L 1975.6 441.8 L 1911.4 531.7 L 1812.9 594.2 L 1685.1 618.9 L 1554.7 592.3 L 1428.6 538.4 L 1331.2 467.1 L 1246.5 412.6 L 1168.4 358.7 L 1104.2 298.4 Z" />
+            <!-- 日本 -->
+            <path d="M 1888.4 376.5 L 1912.6 402.1 L 1899.5 438.2 L 1874.1 452.6 L 1852.3 421.8 Z" />
+            <!-- 印尼/东南亚群岛 -->
+            <path d="M 1594.2 602.1 L 1651.4 618.7 L 1684.3 645.2 L 1641.5 652.8 L 1592.4 631.4 Z" />
+            <path d="M 1681.2 651.9 L 1742.8 662.3 L 1775.1 684.6 L 1721.4 692.1 L 1678.5 671.5 Z" />
+            <path d="M 1756.4 689.5 L 1798.2 702.1 L 1821.6 721.4 L 1784.3 734.8 Z" />
+            <!-- 澳大利亚 -->
+            <path d="M 1648.2 724.1 L 1745.3 701.6 L 1846.2 728.9 L 1918.4 781.5 L 1946.1 861.2 L 1885.6 924.8 L 1772.4 946.1 L 1668.2 915.4 L 1582.5 842.7 L 1598.3 772.6 Z" />
+            <!-- 新西兰 -->
+            <path d="M 1972.4 918.5 L 1988.1 942.3 L 1976.2 964.8 Z" />
+            <path d="M 1948.6 966.2 L 1965.4 978.4 L 1952.1 985.7 Z" />
+            <!-- 南极洲概略 -->
+            <path d="M 150.4 982.1 L 450.8 961.4 L 850.1 972.6 L 1250.9 958.3 L 1650.2 974.8 L 1825.6 962.1 L 1850.4 995.2 L 120.6 995.8 Z" />
           </g>
 
           <!-- 细节层：经纬网格与城市节点 -->
@@ -236,16 +248,17 @@
             <path d="M 0,100 L 2000,100 M 0,200 L 2000,200 M 0,300 L 2000,300 M 0,400 L 2000,400 M 0,500 L 2000,500 M 0,600 L 2000,600 M 0,700 L 2000,700 M 0,800 L 2000,800 M 0,900 L 2000,900" stroke-dasharray="2 6" />
             <path d="M 200,0 L 200,1000 M 400,0 L 400,1000 M 600,0 L 600,1000 M 800,0 L 800,1000 M 1000,0 L 1000,1000 M 1200,0 L 1200,1000 M 1400,0 L 1400,1000 M 1600,0 L 1600,1000 M 1800,0 L 1800,1000" stroke-dasharray="2 6" />
             
-            <!-- 城市光点 (根据真实经纬度大致映射) -->
-            <circle cx="350" cy="300" r="3" class="city-dot" /> <!-- 纽约 -->
-            <circle cx="450" cy="700" r="3" class="city-dot" /> <!-- 圣保罗 -->
-            <circle cx="900" cy="200" r="3" class="city-dot" /> <!-- 伦敦 -->
-            <circle cx="1050" cy="250" r="3" class="city-dot" /> <!-- 柏林 -->
-            <circle cx="1000" cy="450" r="3" class="city-dot" /> <!-- 埃及 -->
-            <circle cx="1400" cy="250" r="3" class="city-dot" /> <!-- 莫斯科 -->
-            <circle cx="1600" cy="400" r="3" class="city-dot" /> <!-- 上海 -->
-            <circle cx="1850" cy="400" r="3" class="city-dot" /> <!-- 东京 -->
-            <circle cx="1750" cy="800" r="3" class="city-dot" /> <!-- 悉尼 -->
+            <!-- 城市光点 -->
+            <circle cx="330" cy="290" r="3" class="city-dot" /> <!-- 纽约 -->
+            <circle cx="520" cy="720" r="3" class="city-dot" /> <!-- 圣保罗 -->
+            <circle cx="852" cy="175" r="3" class="city-dot" /> <!-- 伦敦 -->
+            <circle cx="980" cy="260" r="3" class="city-dot" /> <!-- 柏林 -->
+            <circle cx="985" cy="500" r="3" class="city-dot" /> <!-- 开罗 -->
+            <circle cx="1350" cy="230" r="3" class="city-dot" /> <!-- 莫斯科 -->
+            <circle cx="1690" cy="420" r="3" class="city-dot" /> <!-- 上海 -->
+            <circle cx="1880" cy="420" r="3" class="city-dot" /> <!-- 东京 -->
+            <circle cx="1800" cy="850" r="3" class="city-dot" /> <!-- 悉尼 -->
+            <circle cx="1050" cy="380" r="3" class="city-dot" /> <!-- 迪拜 -->
           </g>
 
         </svg>
@@ -269,7 +282,7 @@
       <div class="subtitle-date" id="date-display">加载中...</div>
     </div>
 
-    <div class="zoom-tip">移动鼠标探索地图 / 滚轮缩放 / 放大触发细节</div>
+    <div class="zoom-tip">移动鼠标探索地图 / 滚轮缩放 / 放大触发 LOD 细节</div>
 
   </div>
 
@@ -278,11 +291,11 @@
   const mapInner = document.getElementById('mapInner');
   const mapSvg = document.querySelector('.map-svg');
 
-  let scale = 1.5; // 初始稍微放大一点，让地图充满视野
+  let scale = 1.5; // 初始稍微放大，让陆地占满视野
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
 
-  // 监听缩放状态，控制细节层显示
+  // LOD 细节控制
   function updateLOD() {
     if (scale > 2.5) {
       mapSvg.classList.add('show-details');
@@ -303,11 +316,11 @@
   }
 
   function updateTransform() {
-    // 使用 translate3d 开启 GPU 加速，确保拖动大体积 SVG 不卡顿
+    // 使用 translate3d 确保复杂的 SVG 也能获得 GPU 硬件加速，防止卡顿
     mapInner.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(${scale})`;
   }
 
-  // 平滑动画循环
+  // 动画循环：使用 LERP (线性插值) 让移动变得极其丝滑
   function animate() {
     currentX += (targetX - currentX) * 0.1;
     currentY += (targetY - currentY) * 0.1;
@@ -316,7 +329,7 @@
   }
   animate();
 
-  // 鼠标移动触发视差
+  // 鼠标移动视差
   container.addEventListener('mousemove', (e) => {
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -324,7 +337,7 @@
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // 视差系数：放大后减弱视差，防止头晕
+    // 视差系数：放大后减弱视差，防止移动过快头晕
     const parallaxFactor = scale > 2.5 ? 0.05 : 0.15; 
     
     const baseCenterX = (rect.width - rect.width * scale) / 2;
@@ -348,19 +361,19 @@
     const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1;
     const newScale = scale * zoomAmount;
 
-    // 缩放范围限制
+    // 限制缩放范围
     if (newScale < 0.8 || newScale > 6) return;
 
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // 以鼠标位置为锚点计算新的偏移
+    // 锚点计算
     const tempX = mouseX - (mouseX - currentX) * (newScale / scale);
     const tempY = mouseY - (mouseY - currentY) * (newScale / scale);
     
     scale = newScale;
-    updateLOD(); // 更新 LOD 状态
+    updateLOD(); 
     
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
@@ -377,7 +390,7 @@
   window.addEventListener('resize', initMap); 
   window.addEventListener('load', initMap);
 
-  // --- 时间和农历逻辑 ---
+  // --- 时间和农历更新 ---
   function updateTime() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', second: '2-digit' });

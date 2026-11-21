@@ -31,7 +31,7 @@
   .topbar {
     position: absolute;
     left: 0; top: 0; width: 100%; height: 40px;
-    background: linear-gradient(90deg, rgba(30,58,138,0.9) 0%, rgba(37,99,235,0.9) 50%, rgba(30,58,138,0.9) 100%);
+    background: linear-gradient(90deg, rgba(30,58,138,0.8) 0%, rgba(37,99,235,0.8) 50%, rgba(30,58,138,0.8) 100%);
     box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
     display: flex; align-items: center; justify-content: center;
     z-index: 100;
@@ -49,6 +49,7 @@
     padding-top: 40px;
   }
 
+  /* 左侧输入区 */
   .input-panel {
     flex: 1;
     display: flex;
@@ -75,7 +76,7 @@
     padding: 0 20px;
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     box-shadow: inset 0 4px 15px rgba(0,0,0,0.5);
   }
 
@@ -86,23 +87,23 @@
     outline: none;
     color: #f2ead8;
     font-family: "ZCOOL KuaiLe", "Fira Code", cursive, monospace;
-    font-size: 30px;
+    font-size: 32px;
     text-align: right;
     letter-spacing: 0.05em;
   }
   #equation-input::placeholder { color: rgba(205, 191, 158, 0.3); }
 
-  /* 软键盘网格 - 增加到 6 列，以容纳更多功能键 */
+  /* 软键盘 */
   .keyboard {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 保持 4 列 */
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     flex-grow: 1;
     max-height: 520px;
   }
 
   .key-btn {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     color: #f2ead8;
@@ -116,33 +117,34 @@
     user-select: none;
   }
   .key-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 220, 150, 0.3); }
-  .key-btn:active { transform: scale(0.95); background: rgba(255, 220, 150, 0.2); }
+  .key-btn:active { transform: scale(0.95); background: rgba(255, 220, 150, 0.15); }
   
   .key-operator { color: #60a5fa; font-family: "Fira Code", monospace; }
   .key-action { color: #ef4444; }
   
   .key-submit {
     grid-column: span 4;
-    background: rgba(37, 99, 235, 0.3);
-    border-color: rgba(37, 99, 235, 0.6);
+    background: rgba(37, 99, 235, 0.2);
+    border-color: rgba(37, 99, 235, 0.5);
     color: #93c5fd;
     font-size: 20px;
     letter-spacing: 0.2em;
     margin-top: 5px;
     font-family: "ZCOOL KuaiLe", cursive;
   }
-  .key-submit:hover { background: rgba(37, 99, 235, 0.5); color: #fff; }
+  .key-submit:hover { background: rgba(37, 99, 235, 0.4); color: #fff; }
 
+  /* 右侧终端区 - 修改了配色 */
   .terminal-panel {
     flex: 1;
-    background: #050505;
+    background: rgba(0, 0, 0, 0.2); /* 与左侧呼应的透暗背景 */
     padding: 30px;
     display: flex;
     flex-direction: column;
     position: relative;
   }
 
-  .terminal-header { display: flex; gap: 8px; margin-bottom: 20px; }
+  .terminal-header { display: flex; gap: 8px; margin-bottom: 25px; }
   .dot { width: 12px; height: 12px; border-radius: 50%; }
   .dot.red { background: #ff5f56; }
   .dot.yellow { background: #ffbd2e; }
@@ -151,20 +153,31 @@
   #terminal-output {
     flex-grow: 1;
     overflow-y: auto;
-    color: #10b981;
+    color: #cdbf9e; /* 改为统一的卡其色/米色系 */
     font-family: "Fira Code", "Consolas", monospace;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.8;
     white-space: pre-wrap;
   }
   #terminal-output::-webkit-scrollbar { width: 8px; }
-  #terminal-output::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 4px; }
+  #terminal-output::-webkit-scrollbar-thumb { background: rgba(255, 220, 150, 0.2); border-radius: 4px; }
 
-  .term-line { margin-bottom: 4px; animation: fadeIn 0.2s ease; }
-  .term-answer { color: #f2ead8; font-weight: bold; font-size: 18px; margin-top: 10px; }
+  .term-line { margin-bottom: 6px; animation: fadeIn 0.2s ease; }
+  
+  /* 答案高亮为亮蓝色 */
+  .term-answer { 
+    color: #60a5fa; 
+    font-weight: bold; 
+    font-size: 17px; 
+    margin-top: 12px;
+    margin-bottom: 12px;
+    text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+  }
+  
   .term-error { color: #ef4444; }
+  
   .term-cursor {
-    display: inline-block; width: 8px; height: 16px; background: #10b981;
+    display: inline-block; width: 8px; height: 16px; background: #cdbf9e;
     vertical-align: middle; margin-left: 5px; animation: blink 1s step-end infinite;
   }
 
@@ -186,6 +199,7 @@
   </div>
 
   <div class="workspace">
+    
     <div class="input-panel">
       <div class="panel-title">输入方程</div>
       
@@ -193,40 +207,39 @@
         <input type="text" id="equation-input" placeholder="例如: 2x + 5 = 15" autocomplete="off" spellcheck="false">
       </div>
 
-      <!-- 软键盘区 -->
       <div class="keyboard">
-        <!-- 第一排 -->
+        <!-- 数字与基础运算 -->
         <div class="key-btn" data-val="7">7</div>
         <div class="key-btn" data-val="8">8</div>
         <div class="key-btn" data-val="9">9</div>
         <div class="key-btn key-operator" data-val="/">/</div>
-        <!-- 第二排 -->
+        
         <div class="key-btn" data-val="4">4</div>
         <div class="key-btn" data-val="5">5</div>
         <div class="key-btn" data-val="6">6</div>
         <div class="key-btn key-operator" data-val="*">*</div>
-        <!-- 第三排 -->
+        
         <div class="key-btn" data-val="1">1</div>
         <div class="key-btn" data-val="2">2</div>
         <div class="key-btn" data-val="3">3</div>
         <div class="key-btn key-operator" data-val="-">-</div>
-        <!-- 第四排 -->
+        
         <div class="key-btn" data-val="0">0</div>
         <div class="key-btn key-operator" data-val="x">x</div>
         <div class="key-btn key-operator" data-val="=">=</div>
         <div class="key-btn key-operator" data-val="+">+</div>
-        <!-- 第五排 (新增功能键) -->
+        
+        <!-- 进阶符号 -->
         <div class="key-btn key-operator" data-val="(">(</div>
         <div class="key-btn key-operator" data-val=")">)</div>
         <div class="key-btn key-operator" data-val="^2">x²</div>
         <div class="key-btn key-operator" data-val="^3">x³</div>
-        <!-- 第六排 -->
+        
         <div class="key-btn key-operator" data-val="^">xⁿ</div>
         <div class="key-btn key-operator" data-val="sqrt(">√</div>
         <div class="key-btn key-action" id="btn-clear">C</div>
         <div class="key-btn key-action" id="btn-backspace">⌫</div>
         
-        <!-- 提交按钮 -->
         <div class="key-btn key-submit" id="btn-submit">开 始 求 解</div>
       </div>
     </div>
@@ -238,7 +251,6 @@
         <div class="dot green"></div>
       </div>
       <div id="terminal-output">
-        <!-- 删除了旧版标题 -->
         <div class="term-line">系统就绪，等待输入方程...</div>
         <div class="term-line"><span class="term-cursor"></span></div>
       </div>
@@ -249,7 +261,6 @@
   const inputField = document.getElementById('equation-input');
   const terminal = document.getElementById('terminal-output');
 
-  // 软键盘输入逻辑
   document.querySelectorAll('.key-btn[data-val]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.getAttribute('data-val');
@@ -262,13 +273,11 @@
     });
   });
 
-  // 清除
   document.getElementById('btn-clear').addEventListener('click', () => {
     inputField.value = '';
     inputField.focus();
   });
 
-  // 退格键逻辑
   document.getElementById('btn-backspace').addEventListener('click', () => {
     const start = inputField.selectionStart;
     const end = inputField.selectionEnd;
@@ -283,7 +292,6 @@
     inputField.focus();
   });
 
-  // 求解与终端输出逻辑
   document.getElementById('btn-submit').addEventListener('click', solveEquation);
   inputField.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') solveEquation();
@@ -297,7 +305,7 @@
       terminal.scrollTop = terminal.scrollHeight;
       
       let i = 0;
-      const speed = 15;
+      const speed = 10;
       function type() {
         if (i < text.length) {
           line.textContent += text.charAt(i);
@@ -318,7 +326,7 @@
 
     terminal.innerHTML = '';
     
-    // 预处理：将 Unicode 的平方、根号等替换为 math.js 认识的语法
+    // 预处理：支持中文字符和符号映射
     let eqStr = rawInput
       .replace(/\s+/g, '')
       .replace(/X/g, 'x')
@@ -326,7 +334,7 @@
       .replace(/³/g, '^3')
       .replace(/√/g, 'sqrt');
     
-    await printToTerminal(`> 正在解析方程: ${eqStr}`);
+    await printToTerminal(`> 解析表达式: ${eqStr}`);
     
     if (!eqStr.includes('=')) {
       await printToTerminal(`[错误] 方程必须包含等号 '='`, 'term-error');
@@ -350,7 +358,6 @@
 
       await printToTerminal(`> 移项整理得: f(x) = ${fExpr} = 0`);
 
-      // 反推系数
       const c = f.evaluate({ x: 0 });
       const f1 = f.evaluate({ x: 1 });
       const f_1 = f.evaluate({ x: -1 });
@@ -362,20 +369,20 @@
 
       if (Math.abs(a) > EPSILON) {
         await printToTerminal(`> 识别为 [一元二次方程] ax² + bx + c = 0`);
-        await printToTerminal(`  其中: a = ${a.toFixed(2)}, b = ${b.toFixed(2)}, c = ${c.toFixed(2)}`);
+        await printToTerminal(`  系数: a = ${a.toFixed(2)}, b = ${b.toFixed(2)}, c = ${c.toFixed(2)}`);
         
         const delta = b * b - 4 * a * c;
-        await printToTerminal(`> 计算判别式: Δ = b² - 4ac = ${delta.toFixed(4)}`);
+        await printToTerminal(`> 判别式: Δ = b² - 4ac = ${delta.toFixed(4)}`);
 
         if (delta > EPSILON) {
           const x1 = (-b + Math.sqrt(delta)) / (2 * a);
           const x2 = (-b - Math.sqrt(delta)) / (2 * a);
-          await printToTerminal(`> Δ > 0，有两个不相等的实数根。`);
+          await printToTerminal(`> Δ > 0，两个不相等的实数根。`);
           await printToTerminal(`\n[答案] x₁ = ${x1.toFixed(4)}`, 'term-answer');
           await printToTerminal(`[答案] x₂ = ${x2.toFixed(4)}`, 'term-answer');
         } else if (Math.abs(delta) <= EPSILON) {
           const x = -b / (2 * a);
-          await printToTerminal(`> Δ = 0，有两个相等的实数根。`);
+          await printToTerminal(`> Δ = 0，两个相等的实数根。`);
           await printToTerminal(`\n[答案] x₁ = x₂ = ${x.toFixed(4)}`, 'term-answer');
         } else {
           await printToTerminal(`> Δ < 0，方程无实数根。`);
@@ -393,7 +400,7 @@
           await printToTerminal(`> 恒等式，x 取任意实数。`);
           await printToTerminal(`\n[答案] x ∈ R`, 'term-answer');
         } else {
-          await printToTerminal(`> 切换至 [牛顿迭代法] 求数值解...`);
+          await printToTerminal(`> 切换至 [牛顿迭代法] 寻找数值解...`);
           let x0 = 1.0, iter = 0, solved = false;
           const h = 1e-6;
           const df = (x) => (f.evaluate({x: x + h}) - f.evaluate({x: x - h})) / (2 * h);

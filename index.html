@@ -69,34 +69,30 @@
   }
 
   /* --- LOD (多细节层次) 层级控制 --- */
-  
-  /* 1. 大洲轮廓层 */
   .layer-continents {
     stroke-width: 1.2;
     opacity: 0.15;
     transition: opacity 0.5s ease, stroke-width 0.5s ease;
   }
 
-  /* 2. 国家边界层 - 默认隐藏 */
   .layer-countries {
     stroke-width: 0.8;
-    stroke: #60a5fa; /* 淡淡的科技蓝 */
+    stroke: #60a5fa;
     opacity: 0;
     transition: opacity 0.5s ease;
-    stroke-dasharray: 2 2; /* 虚线设计，更像科技地图 */
+    stroke-dasharray: 2 2;
   }
   
-  /* 3. 细节层 (城市点与网格) - 默认隐藏 */
   .layer-details {
     stroke-width: 0.5;
-    stroke: rgba(255, 220, 150, 0.3); /* 金色网格 */
+    stroke: rgba(255, 220, 150, 0.3);
     opacity: 0;
     transition: opacity 0.5s ease;
   }
 
   /* 缩放触发的状态类 */
   .show-countries .layer-countries { opacity: 0.6; }
-  .show-countries .layer-continents { opacity: 0.08; } /* 放大时大洲变暗，突出国家 */
+  .show-countries .layer-continents { opacity: 0.08; }
 
   .show-details .layer-details { opacity: 1; }
   .show-details .layer-countries { opacity: 0.3; }
@@ -211,10 +207,7 @@
     
     <div class="map-container" id="mapContainer">
       <div class="map-inner" id="mapInner">
-        <!-- 三层结构的 LOD 地图 SVG -->
         <svg class="map-svg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-          
-          <!-- 第一层：大洲粗略轮廓 -->
           <g class="layer-continents">
             <path d="M 120,50 Q 220,30 280,60 Q 300,100 280,150 Q 250,200 200,220 Q 180,250 150,260 Q 100,260 80,200 Q 50,150 80,100 Z" />
             <path d="M 180,270 Q 240,280 260,320 Q 280,380 250,450 Q 220,480 200,450 Q 190,380 160,330 Z" />
@@ -223,52 +216,36 @@
             <path d="M 580,50 Q 720,30 850,80 Q 900,120 880,200 Q 850,280 800,300 Q 750,330 700,300 Q 680,250 640,200 Q 600,150 580,100 Z" />
             <path d="M 800,360 Q 880,340 920,380 Q 940,420 880,460 Q 820,440 800,400 Z" />
           </g>
-
-          <!-- 第二层：国家/区域边界 (放大1.8倍以上显示) -->
           <g class="layer-countries">
-            <!-- 北美分裂线 -->
             <path d="M 150,130 Q 200,150 240,130" />
             <path d="M 180,180 Q 220,220 180,260" />
-            <!-- 南美分裂线 -->
             <path d="M 220,300 Q 250,320 250,380" />
-            <!-- 欧洲分裂线 -->
             <path d="M 480,80 Q 500,110 520,110" />
-            <!-- 非洲分裂线 -->
             <path d="M 450,250 Q 520,250 580,220" />
-            <!-- 亚洲分裂线 -->
             <path d="M 620,100 Q 700,150 650,200" />
             <path d="M 700,80 Q 750,150 820,180" />
             <path d="M 720,200 Q 800,220 850,250" />
-            <!-- 大不列颠岛 -->
             <path d="M 430,80 Q 450,70 460,90 Q 440,110 430,80 Z" />
-            <!-- 日本列岛 -->
             <path d="M 890,150 Q 910,180 880,220" />
             <path d="M 850,160 Q 870,180 850,200" />
           </g>
-
-          <!-- 第三层：城市节点与经纬辅助网格 (放大3.5倍以上显示) -->
           <g class="layer-details">
-            <!-- 经纬网格线 -->
             <path d="M 0,100 L 1000,100 M 0,200 L 1000,200 M 0,300 L 1000,300 M 0,400 L 1000,400" stroke-dasharray="1 4" />
             <path d="M 200,0 L 200,500 M 400,0 L 400,500 M 600,0 L 600,500 M 800,0 L 800,500" stroke-dasharray="1 4" />
-            
-            <!-- 城市光点 (模拟数据) -->
-            <circle cx="200" cy="180" r="2" class="city-dot" /> <!-- 纽约 -->
-            <circle cx="180" cy="350" r="2" class="city-dot" /> <!-- 圣保罗 -->
-            <circle cx="460" cy="100" r="2" class="city-dot" /> <!-- 伦敦 -->
-            <circle cx="520" cy="140" r="2" class="city-dot" /> <!-- 柏林/巴黎一带 -->
-            <circle cx="550" cy="300" r="2" class="city-dot" /> <!-- 非洲 -->
-            <circle cx="700" cy="150" r="2" class="city-dot" /> <!-- 莫斯科/中东一带 -->
-            <circle cx="780" cy="200" r="2" class="city-dot" /> <!-- 上海 -->
-            <circle cx="820" cy="220" r="2" class="city-dot" /> <!-- 东京 -->
-            <circle cx="850" cy="400" r="2" class="city-dot" /> <!-- 悉尼 -->
+            <circle cx="200" cy="180" r="2" class="city-dot" />
+            <circle cx="180" cy="350" r="2" class="city-dot" />
+            <circle cx="460" cy="100" r="2" class="city-dot" />
+            <circle cx="520" cy="140" r="2" class="city-dot" />
+            <circle cx="550" cy="300" r="2" class="city-dot" />
+            <circle cx="700" cy="150" r="2" class="city-dot" />
+            <circle cx="780" cy="200" r="2" class="city-dot" />
+            <circle cx="820" cy="220" r="2" class="city-dot" />
+            <circle cx="850" cy="400" r="2" class="city-dot" />
           </g>
-
         </svg>
       </div>
     </div>
 
-    <!-- 顶部导航栏 -->
     <div class="topbar">
       <a href="download.html">下载📥</a>
       <a href="aboutus.html">公告📢</a>
@@ -276,7 +253,8 @@
         <span>其他 ▾</span>
         <ul class="dropdown-menu">
           <li><a href="weather.html">天气预报 ☁️</a></li>
-          <li><a href="equation.html">解方程 🧮</a></li>
+          <!-- 这里已经修改为 eq.html -->
+          <li><a href="eq.html">解方程 🧮</a></li>
         </ul>
       </div>
     </div>
@@ -299,7 +277,6 @@
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
 
-  // 控制 LOD 的显示
   function updateLOD() {
     if (scale > 3.5) {
       mapSvg.classList.add('show-countries', 'show-details');
@@ -340,7 +317,6 @@
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // 放大时减弱视差，防止拖拽感太强导致头晕
     const parallaxFactor = scale > 3 ? 0.05 : 0.2; 
     
     const baseCenterX = (rect.width - rect.width * scale) / 2;
@@ -372,7 +348,7 @@
     const tempY = mouseY - (mouseY - currentY) * (newScale / scale);
     
     scale = newScale;
-    updateLOD(); // 缩放时更新 LOD 状态
+    updateLOD();
     
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;

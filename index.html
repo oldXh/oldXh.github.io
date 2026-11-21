@@ -60,7 +60,7 @@
     object-fit: cover;
     fill: rgba(255, 255, 255, 0.015); 
     stroke: #ffffff;
-    stroke-width: 0.4; /* 线条更细，显得更精致 */
+    stroke-width: 0.4; 
     opacity: 0.25; 
     transition: opacity 0.5s ease, stroke 0.5s ease;
   }
@@ -79,7 +79,6 @@
     transition: opacity 0.5s ease;
   }
 
-  /* 放大触发状态：网格和城市光点浮现，地图线变蓝 */
   .show-details .layer-details { opacity: 1; }
   .show-details .map-svg { 
     stroke: #60a5fa; 
@@ -88,7 +87,6 @@
     opacity: 0.8; 
   }
 
-  /* 城市光点动画 */
   .city-dot {
     fill: #cdbf9e;
     stroke: none;
@@ -198,9 +196,8 @@
     
     <div class="map-container" id="mapContainer">
       <div class="map-inner" id="mapInner">
-        <!-- 更加标准的世界地图轮廓 -->
+        <!-- 标准世界地图轮廓 -->
         <svg class="map-svg" viewBox="0 0 2000 1000" xmlns="http://www.w3.org/2000/svg">
-          
           <g class="layer-countries">
             <!-- 北美洲 -->
             <path d="M 123.4,207.6 L 156.2,165.8 L 215.7,145.3 L 287.3,150.9 L 362.5,188.2 L 442.1,201.5 L 512.6,245.8 L 568.2,310.4 L 588.7,387.1 L 545.3,458.9 L 481.2,505.4 L 415.8,526.9 L 354.1,515.3 L 298.6,471.8 L 235.9,487.2 L 175.4,425.6 L 142.7,341.2 L 108.5,265.7 Z"/>
@@ -251,7 +248,6 @@
             <circle cx="1880" cy="420" r="3" class="city-dot" />
             <circle cx="1800" cy="850" r="3" class="city-dot" />
           </g>
-
         </svg>
       </div>
     </div>
@@ -283,8 +279,14 @@
   const mapSvg = document.querySelector('.map-svg');
 
   let scale = 1.5; 
-  let targetX = 0, targetY = 0;
-  let currentX = 0, currentY = 0;
+  
+  // panX/panY 代表地图真实的基础平移量（由滚轮控制）
+  let panX = 0, panY = 0;
+  let targetPanX = 0, targetPanY = 0;
+
+  // parallaxX/parallaxY 代表鼠标带来的视差微调（不改变真实基准）
+  let parallaxX = 0, parallaxY = 0;
+  let targetParallaxX = 0, targetParallaxY = 0;
 
   function updateLOD() {
     if (scale > 2.5) {
@@ -296,27 +298,43 @@
 
   function initMap() {
     const rect = container.getBoundingClientRect();
-    targetX = (rect.width - rect.width * scale) / 2;
-    targetY = (rect.height - rect.height * scale) / 2;
-    currentX = targetX;
-    currentY = targetY;
+    // 计算居中初始位置
+    targetPanX = (rect.width - rect.width * scale) / 2;
+    targetPanY = (rect.height - rect.height * scale) / 2;
+    panX = targetPanX;
+    panY = targetPanY;
+    
+    targetParallaxX = 0;
+    targetParallaxY = 0;
+    parallaxX = 0;
+    parallaxY = 0;
+    
     updateTransform();
     updateLOD();
   }
 
   function updateTransform() {
-    // GPU 加速
-    mapInner.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(${scale})`;
+    // 最终位移 = 基础位移 + 视差偏移
+    const finalX = panX + parallaxX;
+    const finalY = panY + parallaxY;
+    mapInner.style.transform = `translate3d(${finalX}px, ${finalY}px, 0) scale(${scale})`;
   }
 
   function animate() {
-    currentX += (targetX - currentX) * 0.1;
-    currentY += (targetY - currentY) * 0.1;
+    // 基础平移平滑跟进
+    panX += (targetPanX - panX) * 0.15;
+    panY += (targetPanY - panY) * 0.15;
+    
+    // 视差平滑跟进
+    parallaxX += (targetParallaxX - parallaxX) * 0.1;
+    parallaxY += (targetParallaxY - parallaxY) * 0.1;
+    
     updateTransform();
     requestAnimationFrame(animate);
   }
   animate();
 
+  // 鼠标移动：仅触发视差微调，绝对不改动基础平移量
   container.addEventListener('mousemove', (e) => {
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -324,54 +342,59 @@
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
+    // 放大后减弱视差系数
     const parallaxFactor = scale > 2.5 ? 0.05 : 0.15; 
     
-    const baseCenterX = (rect.width - rect.width * scale) / 2;
-    const baseCenterY = (rect.height - rect.height * scale) / 2;
-
-    targetX = baseCenterX - (mouseX - centerX) * parallaxFactor;
-    targetY = baseCenterY - (mouseY - centerY) * parallaxFactor;
+    targetParallaxX = -(mouseX - centerX) * parallaxFactor;
+    targetParallaxY = -(mouseY - centerY) * parallaxFactor;
   });
 
+  // 鼠标离开时，视差回正
   container.addEventListener('mouseleave', () => {
-    const rect = container.getBoundingClientRect();
-    targetX = (rect.width - rect.width * scale) / 2;
-    targetY = (rect.height - rect.height * scale) / 2;
+    targetParallaxX = 0;
+    targetParallaxY = 0;
   });
 
+  // 滚轮缩放：以鼠标为中心缩放，并更新基础平移量
   container.addEventListener('wheel', (e) => {
     e.preventDefault();
     
     const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1;
     const newScale = scale * zoomAmount;
 
+    // 限制缩放范围
     if (newScale < 0.8 || newScale > 8) return;
 
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const tempX = mouseX - (mouseX - currentX) * (newScale / scale);
-    const tempY = mouseY - (mouseY - currentY) * (newScale / scale);
+    // 计算当前鼠标位置对应的“地图坐标” (加上当前的视差偏移)
+    const currentX = panX + parallaxX;
+    const currentY = panY + parallaxY;
     
+    // 这里的锚点计算非常关键
+    const mapPointX = (mouseX - currentX) / scale;
+    const mapPointY = (mouseY - currentY) / scale;
+
     scale = newScale;
+
+    // 计算新的基础 pan，使得刚才鼠标下的地图坐标依然在鼠标位置
+    targetPanX = mouseX - mapPointX * scale;
+    targetPanY = mouseY - mapPointY * scale;
+
+    // 让基础平移瞬间跟上，防止滚动时地图位置漂移
+    panX = targetPanX;
+    panY = targetPanY;
+
     updateLOD(); 
-    
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const parallaxFactor = scale > 2.5 ? 0.05 : 0.15;
-    
-    targetX = tempX - (mouseX - centerX) * parallaxFactor;
-    targetY = tempY - (mouseY - centerY) * parallaxFactor;
-    
-    currentX = tempX;
-    currentY = tempY;
     updateTransform();
   });
 
   window.addEventListener('resize', initMap); 
   window.addEventListener('load', initMap);
 
+  // --- 时间和农历更新 ---
   function updateTime() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', second: '2-digit' });

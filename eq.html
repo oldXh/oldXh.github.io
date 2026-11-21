@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>解方程</title>
+<title>解方程 - 智慧终端</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -49,34 +49,33 @@
     padding-top: 40px;
   }
 
-  /* 左侧输入区 */
+  /* --- 左侧输入区 --- */
   .input-panel {
-    flex: 1;
+    flex: 1.1; /* 稍微加宽以适应复杂的键盘 */
     display: flex;
     flex-direction: column;
-    padding: 30px 40px;
+    padding: 25px 30px;
     border-right: 1px solid rgba(255, 220, 150, 0.1);
   }
 
   .panel-title {
     font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
     color: #cdbf9e;
-    font-size: 28px;
-    margin-bottom: 15px;
+    font-size: 26px;
+    margin-bottom: 12px;
     letter-spacing: 0.05em;
-    text-shadow: 0 0 10px rgba(255, 220, 150, 0.2);
   }
 
   .display-screen {
     width: 100%;
-    height: 70px;
+    height: 60px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 220, 150, 0.2);
-    border-radius: 12px;
-    padding: 0 20px;
+    border-radius: 10px;
+    padding: 0 15px;
     display: flex;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     box-shadow: inset 0 4px 15px rgba(0,0,0,0.5);
   }
 
@@ -87,17 +86,16 @@
     outline: none;
     color: #f2ead8;
     font-family: "ZCOOL KuaiLe", "Fira Code", cursive, monospace;
-    font-size: 32px;
+    font-size: 28px;
     text-align: right;
-    letter-spacing: 0.05em;
   }
-  #equation-input::placeholder { color: rgba(205, 191, 158, 0.3); }
+  #equation-input::placeholder { color: rgba(205, 191, 158, 0.3); font-size: 24px; }
 
-  /* 软键盘 */
+  /* --- 软键盘区 (参考 Desmos) --- */
   .keyboard {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(6, 1fr); /* 6列布局 */
+    gap: 8px;
     flex-grow: 1;
     max-height: 520px;
   }
@@ -105,10 +103,10 @@
   .key-btn {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    border-radius: 8px;
     color: #f2ead8;
-    font-family: "ZCOOL KuaiLe", "Fira Code", cursive, monospace;
-    font-size: 22px;
+    font-family: "Fira Code", monospace;
+    font-size: 18px;
     cursor: pointer;
     transition: all 0.1s ease;
     display: flex;
@@ -116,35 +114,36 @@
     justify-content: center;
     user-select: none;
   }
+  
+  .key-btn.math { font-family: "Songti SC", "SimSun", serif; font-style: italic; font-weight: 500; }
   .key-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 220, 150, 0.3); }
   .key-btn:active { transform: scale(0.95); background: rgba(255, 220, 150, 0.15); }
   
-  .key-operator { color: #60a5fa; font-family: "Fira Code", monospace; }
+  .key-operator { color: #60a5fa; }
   .key-action { color: #ef4444; }
   
   .key-submit {
-    grid-column: span 4;
+    grid-column: span 6;
     background: rgba(37, 99, 235, 0.2);
     border-color: rgba(37, 99, 235, 0.5);
     color: #93c5fd;
-    font-size: 20px;
+    font-size: 18px;
     letter-spacing: 0.2em;
     margin-top: 5px;
     font-family: "ZCOOL KuaiLe", cursive;
   }
   .key-submit:hover { background: rgba(37, 99, 235, 0.4); color: #fff; }
 
-  /* 右侧终端区 - 修改了配色 */
+  /* --- 右侧终端区 --- */
   .terminal-panel {
     flex: 1;
-    background: rgba(0, 0, 0, 0.2); /* 与左侧呼应的透暗背景 */
-    padding: 30px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 25px 30px;
     display: flex;
     flex-direction: column;
-    position: relative;
   }
 
-  .terminal-header { display: flex; gap: 8px; margin-bottom: 25px; }
+  .terminal-header { display: flex; gap: 8px; margin-bottom: 20px; }
   .dot { width: 12px; height: 12px; border-radius: 50%; }
   .dot.red { background: #ff5f56; }
   .dot.yellow { background: #ffbd2e; }
@@ -153,18 +152,17 @@
   #terminal-output {
     flex-grow: 1;
     overflow-y: auto;
-    color: #cdbf9e; /* 改为统一的卡其色/米色系 */
+    color: #cdbf9e; 
     font-family: "Fira Code", "Consolas", monospace;
     font-size: 15px;
     line-height: 1.8;
     white-space: pre-wrap;
   }
-  #terminal-output::-webkit-scrollbar { width: 8px; }
+  #terminal-output::-webkit-scrollbar { width: 6px; }
   #terminal-output::-webkit-scrollbar-thumb { background: rgba(255, 220, 150, 0.2); border-radius: 4px; }
 
   .term-line { margin-bottom: 6px; animation: fadeIn 0.2s ease; }
   
-  /* 答案高亮为亮蓝色 */
   .term-answer { 
     color: #60a5fa; 
     font-weight: bold; 
@@ -177,18 +175,18 @@
   .term-error { color: #ef4444; }
   
   .term-cursor {
-    display: inline-block; width: 8px; height: 16px; background: #cdbf9e;
+    display: inline-block; width: 8px; height: 15px; background: #cdbf9e;
     vertical-align: middle; margin-left: 5px; animation: blink 1s step-end infinite;
   }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     .workspace { flex-direction: column; overflow-y: auto; }
     .input-panel, .terminal-panel { min-height: 50vh; border-right: none; padding: 20px; }
-    .keyboard { max-height: none; gap: 8px; }
-    .key-btn { font-size: 18px; padding: 10px 0; }
+    .keyboard { grid-template-columns: repeat(4, 1fr); max-height: none; }
+    .key-submit { grid-column: span 4; }
   }
 </style>
 </head>
@@ -200,50 +198,61 @@
 
   <div class="workspace">
     
+    <!-- 左侧：输入与高级键盘 -->
     <div class="input-panel">
       <div class="panel-title">输入方程</div>
       
       <div class="display-screen">
-        <input type="text" id="equation-input" placeholder="例如: 2x + 5 = 15" autocomplete="off" spellcheck="false">
+        <input type="text" id="equation-input" placeholder="例如: 3x - 1 = 0" autocomplete="off" spellcheck="false">
       </div>
 
       <div class="keyboard">
-        <!-- 数字与基础运算 -->
+        <!-- 第1排：字母与代数 -->
+        <div class="key-btn math" data-val="x">x</div>
+        <div class="key-btn math" data-val="y">y</div>
+        <div class="key-btn math" data-val="^2">a²</div>
+        <div class="key-btn math" data-val="^">aᵇ</div>
+        <div class="key-btn math" data-val="abs(">|a|</div>
+        <div class="key-btn math" data-val="pi">π</div>
+
+        <!-- 第2排：括号与比较符 -->
+        <div class="key-btn math" data-val="(">(</div>
+        <div class="key-btn math" data-val=")">)</div>
+        <div class="key-btn math" data-val="<">&lt;</div>
+        <div class="key-btn math" data-val=">">&gt;</div>
+        <div class="key-btn math" data-val="<=">≤</div>
+        <div class="key-btn math" data-val=">=">≥</div>
+
+        <!-- 第3排：数字与基础运算 -->
         <div class="key-btn" data-val="7">7</div>
         <div class="key-btn" data-val="8">8</div>
         <div class="key-btn" data-val="9">9</div>
-        <div class="key-btn key-operator" data-val="/">/</div>
-        
+        <div class="key-btn key-operator" data-val="/">÷</div>
+        <div class="key-btn key-action" id="btn-clear">C</div>
+        <div class="key-btn key-action" id="btn-backspace">⌫</div>
+
+        <!-- 第4排 -->
         <div class="key-btn" data-val="4">4</div>
         <div class="key-btn" data-val="5">5</div>
         <div class="key-btn" data-val="6">6</div>
-        <div class="key-btn key-operator" data-val="*">*</div>
-        
+        <div class="key-btn key-operator" data-val="*">×</div>
+        <div class="key-btn key-operator" data-val="-">-</div>
+        <div class="key-btn key-operator" data-val="+">+</div>
+
+        <!-- 第5排 -->
         <div class="key-btn" data-val="1">1</div>
         <div class="key-btn" data-val="2">2</div>
         <div class="key-btn" data-val="3">3</div>
-        <div class="key-btn key-operator" data-val="-">-</div>
-        
         <div class="key-btn" data-val="0">0</div>
-        <div class="key-btn key-operator" data-val="x">x</div>
+        <div class="key-btn" data-val=".">.</div>
         <div class="key-btn key-operator" data-val="=">=</div>
-        <div class="key-btn key-operator" data-val="+">+</div>
-        
-        <!-- 进阶符号 -->
-        <div class="key-btn key-operator" data-val="(">(</div>
-        <div class="key-btn key-operator" data-val=")">)</div>
-        <div class="key-btn key-operator" data-val="^2">x²</div>
-        <div class="key-btn key-operator" data-val="^3">x³</div>
-        
-        <div class="key-btn key-operator" data-val="^">xⁿ</div>
-        <div class="key-btn key-operator" data-val="sqrt(">√</div>
-        <div class="key-btn key-action" id="btn-clear">C</div>
-        <div class="key-btn key-action" id="btn-backspace">⌫</div>
-        
+
+        <!-- 第6排：提交 -->
         <div class="key-btn key-submit" id="btn-submit">开 始 求 解</div>
       </div>
     </div>
 
+    <!-- 右侧：终端 -->
     <div class="terminal-panel">
       <div class="terminal-header">
         <div class="dot red"></div>
@@ -261,6 +270,7 @@
   const inputField = document.getElementById('equation-input');
   const terminal = document.getElementById('terminal-output');
 
+  // 软键盘输入
   document.querySelectorAll('.key-btn[data-val]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.getAttribute('data-val');
@@ -320,20 +330,48 @@
     });
   }
 
+  // 核心辅助函数：将浮点数智能转换回分数（如果分母过大则保留小数）
+  function formatResult(value) {
+    if (Math.abs(value) < 1e-9) return "0"; // 处理极小的浮点误差
+    try {
+      const frac = math.fraction(value);
+      // 如果分母太大（说明是无理数的近似值），则直接返回带4位小数的结果
+      if (frac.d > 100) {
+        return parseFloat(value.toFixed(4)).toString();
+      }
+      // 如果是整数，直接返回整数
+      if (frac.d === 1) {
+        return frac.n.toString();
+      }
+      // 否则返回分数格式
+      return math.format(frac, { fraction: 'ratio' });
+    } catch(e) {
+      return parseFloat(value.toFixed(4)).toString();
+    }
+  }
+
   async function solveEquation() {
     const rawInput = inputField.value.trim();
     if (!rawInput) return;
 
     terminal.innerHTML = '';
     
-    // 预处理：支持中文字符和符号映射
+    // 预处理：符号替换
     let eqStr = rawInput
       .replace(/\s+/g, '')
       .replace(/X/g, 'x')
       .replace(/²/g, '^2')
       .replace(/³/g, '^3')
-      .replace(/√/g, 'sqrt');
+      .replace(/√/g, 'sqrt')
+      .replace(/π/g, 'pi')
+      .replace(/×/g, '*')
+      .replace(/÷/g, '/');
     
+    // 处理比较符（如果是不等式，目前终端不支持完整解析，给个提示）
+    if (eqStr.includes('<') || eqStr.includes('>') || eqStr.includes('<=') || eqStr.includes('>=')) {
+      await printToTerminal(`[提示] 当前版本主要针对等式求解，不等式计算可能不准确。`, 'term-error');
+    }
+
     await printToTerminal(`> 解析表达式: ${eqStr}`);
     
     if (!eqStr.includes('=')) {
@@ -351,6 +389,7 @@
       const fExpr = `(${left}) - (${right})`;
       const f = math.compile(fExpr);
       
+      // 测试方程是否合法
       const testVal = f.evaluate({ x: 123.456 });
       if (typeof testVal !== 'number' || isNaN(testVal)) {
         throw new Error("无法识别的数学表达式");
@@ -358,6 +397,7 @@
 
       await printToTerminal(`> 移项整理得: f(x) = ${fExpr} = 0`);
 
+      // 反推系数
       const c = f.evaluate({ x: 0 });
       const f1 = f.evaluate({ x: 1 });
       const f_1 = f.evaluate({ x: -1 });
@@ -365,62 +405,66 @@
       const a = (f1 + f_1 - 2 * c) / 2;
       const b = (f1 - f_1) / 2;
 
-      const EPSILON = 1e-9;
+      const EPSILON = 1e-8;
 
       if (Math.abs(a) > EPSILON) {
+        // 一元二次方程
         await printToTerminal(`> 识别为 [一元二次方程] ax² + bx + c = 0`);
-        await printToTerminal(`  系数: a = ${a.toFixed(2)}, b = ${b.toFixed(2)}, c = ${c.toFixed(2)}`);
+        await printToTerminal(`  系数: a = ${formatResult(a)}, b = ${formatResult(b)}, c = ${formatResult(c)}`);
         
         const delta = b * b - 4 * a * c;
-        await printToTerminal(`> 判别式: Δ = b² - 4ac = ${delta.toFixed(4)}`);
+        await printToTerminal(`> 判别式: Δ = b² - 4ac = ${formatResult(delta)}`);
 
         if (delta > EPSILON) {
           const x1 = (-b + Math.sqrt(delta)) / (2 * a);
           const x2 = (-b - Math.sqrt(delta)) / (2 * a);
           await printToTerminal(`> Δ > 0，两个不相等的实数根。`);
-          await printToTerminal(`\n[答案] x₁ = ${x1.toFixed(4)}`, 'term-answer');
-          await printToTerminal(`[答案] x₂ = ${x2.toFixed(4)}`, 'term-answer');
+          await printToTerminal(`\n[答案] x₁ = ${formatResult(x1)}`, 'term-answer');
+          await printToTerminal(`[答案] x₂ = ${formatResult(x2)}`, 'term-answer');
         } else if (Math.abs(delta) <= EPSILON) {
           const x = -b / (2 * a);
           await printToTerminal(`> Δ = 0，两个相等的实数根。`);
-          await printToTerminal(`\n[答案] x₁ = x₂ = ${x.toFixed(4)}`, 'term-answer');
+          await printToTerminal(`\n[答案] x₁ = x₂ = ${formatResult(x)}`, 'term-answer');
         } else {
           await printToTerminal(`> Δ < 0，方程无实数根。`);
           await printToTerminal(`\n[答案] 无实数解`, 'term-answer');
         }
       } 
       else if (Math.abs(b) > EPSILON) {
+        // 一元一次方程
         await printToTerminal(`> 识别为 [一元一次方程] bx + c = 0`);
-        await printToTerminal(`> 移项得: ${b.toFixed(2)}x = ${(-c).toFixed(2)}`);
+        await printToTerminal(`> 移项得: ${formatResult(b)}x = ${formatResult(-c)}`);
         const x = -c / b;
-        await printToTerminal(`\n[答案] x = ${x.toFixed(4)}`, 'term-answer');
+        await printToTerminal(`\n[答案] x = ${formatResult(x)}`, 'term-answer');
       } 
       else {
+        // 常数或更高次
         if (Math.abs(c) < EPSILON) {
           await printToTerminal(`> 恒等式，x 取任意实数。`);
           await printToTerminal(`\n[答案] x ∈ R`, 'term-answer');
         } else {
-          await printToTerminal(`> 切换至 [牛顿迭代法] 寻找数值解...`);
+          await printToTerminal(`> 无法直接提取多项式系数，切换至 [牛顿迭代法]...`);
           let x0 = 1.0, iter = 0, solved = false;
           const h = 1e-6;
           const df = (x) => (f.evaluate({x: x + h}) - f.evaluate({x: x - h})) / (2 * h);
 
           while (iter < 15) {
             const fx = f.evaluate({ x: x0 });
-            if (Math.abs(fx) < 1e-6) { solved = true; break; }
+            if (Math.abs(fx) < 1e-7) { solved = true; break; }
             const dfx = df(x0);
             if (Math.abs(dfx) < 1e-9) break;
             const x1 = x0 - fx / dfx;
-            await printToTerminal(`  迭代 ${iter + 1}: x = ${x1.toFixed(6)}`);
+            await printToTerminal(`  迭代 ${iter + 1}: x = ${formatResult(x1)}`);
             x0 = x1;
             iter++;
           }
-          if (solved) await printToTerminal(`\n[答案] 找到近似解: x ≈ ${x0.toFixed(4)}`, 'term-answer');
+          if (solved) await printToTerminal(`\n[答案] 找到近似解: x ≈ ${formatResult(x0)}`, 'term-answer');
           else await printToTerminal(`\n[答案] 未能在限定次数内找到实数解。`, 'term-error');
         }
       }
     } catch (error) {
       await printToTerminal(`[错误] 解析失败: ${error.message}`, 'term-error');
+      await printToTerminal(`请检查格式（支持使用 x, pi, 括号及运算符）`, 'term-error');
     }
     
     const cursorLine = document.createElement('div');

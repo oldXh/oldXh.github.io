@@ -13,7 +13,7 @@
     width: 100%;
     height: 100%;
     background: #0f0f10;
-    overflow: hidden; /* 防止拖动地图时出现滚动条 */
+    overflow: hidden;
   }
 
   body {
@@ -40,15 +40,10 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    cursor: grab;
     z-index: 1;
-  }
-  
-  .map-container:active {
-    cursor: grabbing;
+    user-select: none; 
   }
 
-  /* 地图包裹层，用于执行 transform */
   .map-inner {
     position: absolute;
     top: 0;
@@ -56,24 +51,69 @@
     width: 100%;
     height: 100%;
     transform-origin: 0 0;
-    /* 初始稍微缩小一点，留出拖动余地 */
-    transform: translate(0px, 0px) scale(1.2); 
+    transition: transform 0.15s ease-out;
   }
 
-  /* 使用 SVG 绘制极简白色轮廓 */
+  /* 基础地图样式 */
   .map-svg {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.15; /* 降低透明度，作为背景 */
     fill: none;
     stroke: #ffffff;
-    stroke-width: 1.5;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s ease;
   }
   
   .map-container:hover .map-svg {
-    opacity: 0.25;
+    opacity: 1;
+  }
+
+  /* --- LOD (多细节层次) 层级控制 --- */
+  
+  /* 1. 大洲轮廓层 */
+  .layer-continents {
+    stroke-width: 1.2;
+    opacity: 0.15;
+    transition: opacity 0.5s ease, stroke-width 0.5s ease;
+  }
+
+  /* 2. 国家边界层 - 默认隐藏 */
+  .layer-countries {
+    stroke-width: 0.8;
+    stroke: #60a5fa; /* 淡淡的科技蓝 */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    stroke-dasharray: 2 2; /* 虚线设计，更像科技地图 */
+  }
+  
+  /* 3. 细节层 (城市点与网格) - 默认隐藏 */
+  .layer-details {
+    stroke-width: 0.5;
+    stroke: rgba(255, 220, 150, 0.3); /* 金色网格 */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  /* 缩放触发的状态类 */
+  .show-countries .layer-countries { opacity: 0.6; }
+  .show-countries .layer-continents { opacity: 0.08; } /* 放大时大洲变暗，突出国家 */
+
+  .show-details .layer-details { opacity: 1; }
+  .show-details .layer-countries { opacity: 0.3; }
+
+  /* 城市光点动画 */
+  .city-dot {
+    fill: #cdbf9e;
+    stroke: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .show-details .city-dot { opacity: 1; animation: pulse 2s infinite; }
+
+  @keyframes pulse {
+    0% { r: 1.5; opacity: 1; }
+    50% { r: 2.5; opacity: 0.5; }
+    100% { r: 1.5; opacity: 1; }
   }
 
   /* --- 顶部导航栏 --- */
@@ -88,7 +128,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100; /* 保证在最上层 */
+    z-index: 100;
   }
 
   .topbar a, .dropdown > span {
@@ -102,13 +142,8 @@
     cursor: pointer;
   }
 
-  .topbar a:hover, .dropdown:hover > span {
-    transform: scale(1.15);
-  }
-
-  .topbar > a:first-child {
-    margin-right: 40px; 
-  }
+  .topbar a:hover, .dropdown:hover > span { transform: scale(1.15); }
+  .topbar > a:first-child { margin-right: 40px; }
 
   .dropdown { position: relative; display: inline-block; margin-left: 40px; }
   .dropdown::after { content: ''; position: absolute; left: 0; top: 100%; width: 100%; height: 15px; }
@@ -123,12 +158,8 @@
     transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
     z-index: 101;
   }
-  .dropdown:hover .dropdown-menu {
-    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
-  }
-  .dropdown-menu li a {
-    display: block; padding: 10px 20px; font-size: 14px; letter-spacing: 0.1em; text-align: center; white-space: nowrap;
-  }
+  .dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+  .dropdown-menu li a { display: block; padding: 10px 20px; font-size: 14px; letter-spacing: 0.1em; text-align: center; white-space: nowrap; }
   .dropdown-menu li a:hover { background: rgba(37, 99, 235, 0.3); transform: none; }
 
   /* --- 中心文字区域 --- */
@@ -138,7 +169,6 @@
     top: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
-    /* 让鼠标穿透文字层，以便能拖动底下的地图 */
     pointer-events: none;
     z-index: 10;
   }
@@ -148,8 +178,7 @@
     font-size: 110px;
     line-height: 1;
     white-space: nowrap;
-    /* 增加一点文字阴影，防止和背景地图重叠看不清 */
-    text-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 220, 150, 0.2);
+    text-shadow: 0 0 30px rgba(0, 0, 0, 0.9), 0 0 50px rgba(255, 220, 150, 0.2);
     letter-spacing: 0.05em;
     color: #f2ead8;
   }
@@ -164,7 +193,6 @@
     text-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 10px rgba(255, 220, 150, 0.3);
   }
   
-  /* 缩放提示 */
   .zoom-tip {
     position: absolute;
     bottom: 30px;
@@ -181,28 +209,61 @@
 <body>
   <div class="stage">
     
-    <!-- 地图容器 -->
     <div class="map-container" id="mapContainer">
       <div class="map-inner" id="mapInner">
-        <!-- 极简世界地图 SVG 轮廓 (内联) -->
-        <svg class="map-svg" viewBox="0 0 2000 1000" xmlns="http://www.w3.org/2000/svg">
-          <g>
-            <!-- 北美洲 -->
-            <path d="M200,200 Q300,100 400,150 T550,250 T600,400 T500,500 T400,550 T300,600 T200,500 T150,350 Z" />
-            <!-- 南美洲 -->
-            <path d="M450,600 Q550,650 600,800 T550,950 T400,1000 T300,850 T350,700 Z" />
-            <!-- 欧洲 -->
-            <path d="M800,150 Q950,100 1050,150 T1100,250 T1000,350 T850,300 T800,200 Z" />
-            <!-- 非洲 -->
-            <path d="M850,350 Q1000,350 1100,450 T1050,700 T950,850 T800,750 T750,500 Z" />
-            <!-- 亚洲 -->
-            <path d="M1100,150 Q1300,100 1500,200 T1700,400 T1600,600 T1400,550 T1200,500 T1100,400 Z" />
-            <!-- 澳大利亚 -->
-            <path d="M1550,700 Q1700,650 1800,750 T1700,900 T1500,850 T1550,750 Z" />
-            <!-- 补充一些岛屿和形状使其更像地图 (粗略轮廓) -->
-            <path d="M300,100 Q350,80 400,120 T350,180 T280,150 Z" />
-            <path d="M1800,200 Q1900,150 1950,250 T1850,350 T1800,250 Z" />
+        <!-- 三层结构的 LOD 地图 SVG -->
+        <svg class="map-svg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+          
+          <!-- 第一层：大洲粗略轮廓 -->
+          <g class="layer-continents">
+            <path d="M 120,50 Q 220,30 280,60 Q 300,100 280,150 Q 250,200 200,220 Q 180,250 150,260 Q 100,260 80,200 Q 50,150 80,100 Z" />
+            <path d="M 180,270 Q 240,280 260,320 Q 280,380 250,450 Q 220,480 200,450 Q 190,380 160,330 Z" />
+            <path d="M 440,60 Q 520,50 560,80 Q 580,110 540,140 Q 500,160 460,140 Q 430,110 440,60 Z" />
+            <path d="M 450,180 Q 520,170 580,210 Q 620,260 600,320 Q 550,400 510,420 Q 470,380 450,320 Q 430,250 450,180 Z" />
+            <path d="M 580,50 Q 720,30 850,80 Q 900,120 880,200 Q 850,280 800,300 Q 750,330 700,300 Q 680,250 640,200 Q 600,150 580,100 Z" />
+            <path d="M 800,360 Q 880,340 920,380 Q 940,420 880,460 Q 820,440 800,400 Z" />
           </g>
+
+          <!-- 第二层：国家/区域边界 (放大1.8倍以上显示) -->
+          <g class="layer-countries">
+            <!-- 北美分裂线 -->
+            <path d="M 150,130 Q 200,150 240,130" />
+            <path d="M 180,180 Q 220,220 180,260" />
+            <!-- 南美分裂线 -->
+            <path d="M 220,300 Q 250,320 250,380" />
+            <!-- 欧洲分裂线 -->
+            <path d="M 480,80 Q 500,110 520,110" />
+            <!-- 非洲分裂线 -->
+            <path d="M 450,250 Q 520,250 580,220" />
+            <!-- 亚洲分裂线 -->
+            <path d="M 620,100 Q 700,150 650,200" />
+            <path d="M 700,80 Q 750,150 820,180" />
+            <path d="M 720,200 Q 800,220 850,250" />
+            <!-- 大不列颠岛 -->
+            <path d="M 430,80 Q 450,70 460,90 Q 440,110 430,80 Z" />
+            <!-- 日本列岛 -->
+            <path d="M 890,150 Q 910,180 880,220" />
+            <path d="M 850,160 Q 870,180 850,200" />
+          </g>
+
+          <!-- 第三层：城市节点与经纬辅助网格 (放大3.5倍以上显示) -->
+          <g class="layer-details">
+            <!-- 经纬网格线 -->
+            <path d="M 0,100 L 1000,100 M 0,200 L 1000,200 M 0,300 L 1000,300 M 0,400 L 1000,400" stroke-dasharray="1 4" />
+            <path d="M 200,0 L 200,500 M 400,0 L 400,500 M 600,0 L 600,500 M 800,0 L 800,500" stroke-dasharray="1 4" />
+            
+            <!-- 城市光点 (模拟数据) -->
+            <circle cx="200" cy="180" r="2" class="city-dot" /> <!-- 纽约 -->
+            <circle cx="180" cy="350" r="2" class="city-dot" /> <!-- 圣保罗 -->
+            <circle cx="460" cy="100" r="2" class="city-dot" /> <!-- 伦敦 -->
+            <circle cx="520" cy="140" r="2" class="city-dot" /> <!-- 柏林/巴黎一带 -->
+            <circle cx="550" cy="300" r="2" class="city-dot" /> <!-- 非洲 -->
+            <circle cx="700" cy="150" r="2" class="city-dot" /> <!-- 莫斯科/中东一带 -->
+            <circle cx="780" cy="200" r="2" class="city-dot" /> <!-- 上海 -->
+            <circle cx="820" cy="220" r="2" class="city-dot" /> <!-- 东京 -->
+            <circle cx="850" cy="400" r="2" class="city-dot" /> <!-- 悉尼 -->
+          </g>
+
         </svg>
       </div>
     </div>
@@ -211,151 +272,138 @@
     <div class="topbar">
       <a href="download.html">下载📥</a>
       <a href="aboutus.html">公告📢</a>
-      
       <div class="dropdown">
         <span>其他 ▾</span>
         <ul class="dropdown-menu">
           <li><a href="weather.html">天气预报 ☁️</a></li>
+          <li><a href="equation.html">解方程 🧮</a></li>
         </ul>
       </div>
     </div>
 
-    <!-- 中心文字 -->
     <div class="at">
       <div class="title-time" id="time-display">--:--:--</div>
       <div class="subtitle-date" id="date-display">加载中...</div>
     </div>
 
-    <!-- 操作提示 -->
-    <div class="zoom-tip">支持鼠标拖拽平移 / 滚轮缩放地球</div>
+    <div class="zoom-tip">移动鼠标探索地图 / 滚轮缩放 / 放大触发 LOD 细节</div>
 
   </div>
 
 <script>
-  // --- 1. 地图拖拽与缩放逻辑 ---
   const container = document.getElementById('mapContainer');
   const mapInner = document.getElementById('mapInner');
+  const mapSvg = document.querySelector('.map-svg');
 
-  let scale = 1.2; // 初始缩放
-  let translateX = 0;
-  let translateY = 0;
-  let isDragging = false;
-  let startX, startY;
+  let scale = 1.2; 
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
 
-  // 更新 CSS Transform
-  function updateTransform() {
-    mapInner.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+  // 控制 LOD 的显示
+  function updateLOD() {
+    if (scale > 3.5) {
+      mapSvg.classList.add('show-countries', 'show-details');
+    } else if (scale > 1.8) {
+      mapSvg.classList.add('show-countries');
+      mapSvg.classList.remove('show-details');
+    } else {
+      mapSvg.classList.remove('show-countries', 'show-details');
+    }
   }
 
-  // 鼠标按下
-  container.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    startX = e.clientX - translateX;
-    startY = e.clientY - translateY;
-  });
-
-  // 鼠标移动
-  window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    translateX = e.clientX - startX;
-    translateY = e.clientY - startY;
+  function initMap() {
+    const rect = container.getBoundingClientRect();
+    targetX = (rect.width - rect.width * scale) / 2;
+    targetY = (rect.height - rect.height * scale) / 2;
+    currentX = targetX;
+    currentY = targetY;
     updateTransform();
+    updateLOD();
+  }
+
+  function updateTransform() {
+    mapInner.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
+  }
+
+  function animate() {
+    currentX += (targetX - currentX) * 0.1;
+    currentY += (targetY - currentY) * 0.1;
+    updateTransform();
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  container.addEventListener('mousemove', (e) => {
+    const rect = container.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // 放大时减弱视差，防止拖拽感太强导致头晕
+    const parallaxFactor = scale > 3 ? 0.05 : 0.2; 
+    
+    const baseCenterX = (rect.width - rect.width * scale) / 2;
+    const baseCenterY = (rect.height - rect.height * scale) / 2;
+
+    targetX = baseCenterX - (mouseX - centerX) * parallaxFactor;
+    targetY = baseCenterY - (mouseY - centerY) * parallaxFactor;
   });
 
-  // 鼠标松开
-  window.addEventListener('mouseup', () => {
-    isDragging = false;
+  container.addEventListener('mouseleave', () => {
+    const rect = container.getBoundingClientRect();
+    targetX = (rect.width - rect.width * scale) / 2;
+    targetY = (rect.height - rect.height * scale) / 2;
   });
 
-  // 滚轮缩放 (以鼠标位置为中心)
   container.addEventListener('wheel', (e) => {
     e.preventDefault();
     
-    // 滚轮向上放大(1.1)，向下缩小(0.9)
     const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1;
     const newScale = scale * zoomAmount;
 
-    // 限制缩放范围：最小0.8(差不多看到一个地球)，最大8(放大到局部)
     if (newScale < 0.8 || newScale > 8) return;
 
-    // 计算鼠标相对于容器左上角的位置
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // 根据鼠标位置重新计算 translate 偏移量，实现“向鼠标处放大”
-    translateX = mouseX - (mouseX - translateX) * (newScale / scale);
-    translateY = mouseY - (mouseY - translateY) * (newScale / scale);
+    const tempX = mouseX - (mouseX - currentX) * (newScale / scale);
+    const tempY = mouseY - (mouseY - currentY) * (newScale / scale);
     
     scale = newScale;
+    updateLOD(); // 缩放时更新 LOD 状态
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const parallaxFactor = scale > 3 ? 0.05 : 0.2;
+    
+    targetX = tempX - (mouseX - centerX) * parallaxFactor;
+    targetY = tempY - (mouseY - centerY) * parallaxFactor;
+    
+    currentX = tempX;
+    currentY = tempY;
     updateTransform();
   });
 
-  // 初始化地图位置(居中)
-  function initMap() {
-    const rect = container.getBoundingClientRect();
-    // 让地图居中(根据缩放比例微调)
-    translateX = (rect.width - rect.width * scale) / 2;
-    translateY = (rect.height - rect.height * scale) / 2;
-    updateTransform();
-  }
-  // 确保 DOM 加载完毕后再初始化
-  window.addEventListener('load', initMap);
   window.addEventListener('resize', initMap); 
+  window.addEventListener('load', initMap);
 
-  // --- 2. 时间和农历更新逻辑 ---
   function updateTime() {
     const now = new Date();
-    
-    // 获取上海时间 (24小时制)
-    const timeStr = now.toLocaleTimeString('zh-CN', { 
-      hour12: false, 
-      timeZone: 'Asia/Shanghai',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+    const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', second: '2-digit' });
     document.getElementById('time-display').textContent = timeStr;
-
-    // 获取公历日期 (包含星期)
-    const dateStr = now.toLocaleDateString('zh-CN', { 
-      timeZone: 'Asia/Shanghai', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric', 
-      weekday: 'long' 
-    });
-
-    // 获取农历
+    const dateStr = now.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
     let lunarStr = '';
     try {
-      const lunar = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { 
-        timeZone: 'Asia/Shanghai', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }).format(now);
-      
-      // 简单的格式化农历字符串：将 "2026丙午年十月十二" 转换为 "农历十月十二"
-      // 提取月份和日期部分
+      const lunar = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { timeZone: 'Asia/Shanghai', year: 'numeric', month: 'long', day: 'numeric' }).format(now);
       const match = lunar.match(/(.*?年)(.*)/);
-      if (match && match[2]) {
-        lunarStr = `农历${match[2]}`;
-      } else {
-        lunarStr = lunar;
-      }
-    } catch(e) {
-      lunarStr = '农历获取失败';
-    }
-
+      lunarStr = match && match[2] ? `农历${match[2]}` : lunar;
+    } catch(e) { lunarStr = '农历获取失败'; }
     document.getElementById('date-display').textContent = `${dateStr} · ${lunarStr}`;
   }
-
-  // 每秒更新一次
   setInterval(updateTime, 1000);
-  // 立即执行一次，防止开头出现 1 秒空白
   updateTime();
-
 </script>
 </body>
 </html>

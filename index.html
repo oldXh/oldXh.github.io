@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>oldXh.github.io(目前处于内侧中……)</title>
+<title>oldXh.github.io (目前处于内侧中……)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
@@ -13,13 +13,13 @@
     width: 100%;
     height: 100%;
     background: #0f0f10;
+    overflow: hidden; /* 防止拖动地图时出现滚动条 */
   }
 
   body {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: auto;
   }
 
   .stage {
@@ -32,6 +32,51 @@
     color: #f2ead8;
   }
 
+  /* --- 地图背景相关 --- */
+  .map-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
+    z-index: 1;
+  }
+  
+  .map-container:active {
+    cursor: grabbing;
+  }
+
+  /* 地图包裹层，用于执行 transform */
+  .map-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+    /* 初始稍微缩小一点，留出拖动余地 */
+    transform: translate(0px, 0px) scale(1.2); 
+  }
+
+  /* 使用 SVG 绘制极简白色轮廓 */
+  .map-svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.15; /* 降低透明度，作为背景 */
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 1.5;
+    transition: opacity 0.3s ease;
+  }
+  
+  .map-container:hover .map-svg {
+    opacity: 0.25;
+  }
+
+  /* --- 顶部导航栏 --- */
   .topbar {
     position: absolute;
     left: 0;
@@ -43,7 +88,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 100; /* 保证在最上层 */
   }
 
   .topbar a, .dropdown > span {
@@ -53,7 +98,7 @@
     font-size: 15px;
     letter-spacing: 0.15em;
     display: inline-block;
-    transition: transform 0.2s ease, color 0.2s ease;
+    transition: transform 0.2s ease;
     cursor: pointer;
   }
 
@@ -65,100 +110,108 @@
     margin-right: 40px; 
   }
 
-  /* 下拉菜单容器 */
-  .dropdown {
-    position: relative;
-    display: inline-block;
-    margin-left: 40px;
-  }
-
-  /* 透明过桥区，防止鼠标移向下拉框时菜单意外关闭 */
-  .dropdown::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 100%;
-    width: 100%;
-    height: 15px;
-  }
-
-  /* 下拉列表 */
+  .dropdown { position: relative; display: inline-block; margin-left: 40px; }
+  .dropdown::after { content: ''; position: absolute; left: 0; top: 100%; width: 100%; height: 15px; }
   .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
+    position: absolute; top: 100%; left: 50%;
     transform: translateX(-50%) translateY(10px);
     background: rgba(20, 28, 48, 0.95);
     border: 1px solid rgba(59, 130, 246, 0.4);
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(37, 99, 235, 0.2);
-    backdrop-filter: blur(8px);
-    list-style: none;
-    padding: 8px 0;
-    min-width: 130px;
-    opacity: 0;
-    visibility: hidden;
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(37, 99, 235, 0.2);
+    backdrop-filter: blur(8px); list-style: none; padding: 8px 0; min-width: 130px;
+    opacity: 0; visibility: hidden;
     transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
     z-index: 101;
   }
-
   .dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
   }
-
   .dropdown-menu li a {
-    display: block;
-    padding: 10px 20px;
-    font-size: 14px;
-    letter-spacing: 0.1em;
-    text-align: center;
-    white-space: nowrap;
+    display: block; padding: 10px 20px; font-size: 14px; letter-spacing: 0.1em; text-align: center; white-space: nowrap;
   }
+  .dropdown-menu li a:hover { background: rgba(37, 99, 235, 0.3); transform: none; }
 
-  .dropdown-menu li a:hover {
-    background: rgba(37, 99, 235, 0.3);
-    transform: none;
-  }
-
+  /* --- 中心文字区域 --- */
   .at {
     position: absolute;
-    left: calc(50% + var(--x, 0px));
-    top:  calc(50% - var(--y, 0px));
+    left: 50%;
+    top: 50%;
     transform: translate(-50%, -50%);
+    text-align: center;
+    /* 让鼠标穿透文字层，以便能拖动底下的地图 */
+    pointer-events: none;
+    z-index: 10;
   }
 
-  .title {
-    --y: 80px;
-    width: 556px;
-    display: flex;
-    justify-content: space-between;
+  .title-time {
     font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
-    font-size: 112px;
+    font-size: 110px;
     line-height: 1;
     white-space: nowrap;
-    text-shadow: 0 0 24px rgba(255, 220, 150, .25);
+    /* 增加一点文字阴影，防止和背景地图重叠看不清 */
+    text-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 220, 150, 0.2);
+    letter-spacing: 0.05em;
+    color: #f2ead8;
   }
 
-  .subtitle {
-    --y: -55px;
+  .subtitle-date {
+    margin-top: 10px;
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 48px;
-    line-height: 1.2;
+    font-size: 32px;
     white-space: nowrap;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.1em;
     color: #cdbf9e;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 10px rgba(255, 220, 150, 0.3);
+  }
+  
+  /* 缩放提示 */
+  .zoom-tip {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    z-index: 10;
+    letter-spacing: 0.05em;
   }
 </style>
 </head>
 <body>
   <div class="stage">
+    
+    <!-- 地图容器 -->
+    <div class="map-container" id="mapContainer">
+      <div class="map-inner" id="mapInner">
+        <!-- 极简世界地图 SVG 轮廓 (内联) -->
+        <svg class="map-svg" viewBox="0 0 2000 1000" xmlns="http://www.w3.org/2000/svg">
+          <g>
+            <!-- 北美洲 -->
+            <path d="M200,200 Q300,100 400,150 T550,250 T600,400 T500,500 T400,550 T300,600 T200,500 T150,350 Z" />
+            <!-- 南美洲 -->
+            <path d="M450,600 Q550,650 600,800 T550,950 T400,1000 T300,850 T350,700 Z" />
+            <!-- 欧洲 -->
+            <path d="M800,150 Q950,100 1050,150 T1100,250 T1000,350 T850,300 T800,200 Z" />
+            <!-- 非洲 -->
+            <path d="M850,350 Q1000,350 1100,450 T1050,700 T950,850 T800,750 T750,500 Z" />
+            <!-- 亚洲 -->
+            <path d="M1100,150 Q1300,100 1500,200 T1700,400 T1600,600 T1400,550 T1200,500 T1100,400 Z" />
+            <!-- 澳大利亚 -->
+            <path d="M1550,700 Q1700,650 1800,750 T1700,900 T1500,850 T1550,750 Z" />
+            <!-- 补充一些岛屿和形状使其更像地图 (粗略轮廓) -->
+            <path d="M300,100 Q350,80 400,120 T350,180 T280,150 Z" />
+            <path d="M1800,200 Q1900,150 1950,250 T1850,350 T1800,250 Z" />
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
     <div class="topbar">
       <a href="download.html">下载📥</a>
       <a href="aboutus.html">公告📢</a>
       
-      <!-- 可下拉的“其他”菜单 -->
       <div class="dropdown">
         <span>其他 ▾</span>
         <ul class="dropdown-menu">
@@ -167,10 +220,142 @@
       </div>
     </div>
 
-    <div class="at title">
-      <span>欢</span><span>迎</span><span>光</span><span>临</span>
+    <!-- 中心文字 -->
+    <div class="at">
+      <div class="title-time" id="time-display">--:--:--</div>
+      <div class="subtitle-date" id="date-display">加载中...</div>
     </div>
-    <div class="at subtitle">Happy new year~</div>
+
+    <!-- 操作提示 -->
+    <div class="zoom-tip">支持鼠标拖拽平移 / 滚轮缩放地球</div>
+
   </div>
+
+<script>
+  // --- 1. 地图拖拽与缩放逻辑 ---
+  const container = document.getElementById('mapContainer');
+  const mapInner = document.getElementById('mapInner');
+
+  let scale = 1.2; // 初始缩放
+  let translateX = 0;
+  let translateY = 0;
+  let isDragging = false;
+  let startX, startY;
+
+  // 更新 CSS Transform
+  function updateTransform() {
+    mapInner.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+  }
+
+  // 鼠标按下
+  container.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startX = e.clientX - translateX;
+    startY = e.clientY - translateY;
+  });
+
+  // 鼠标移动
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    translateX = e.clientX - startX;
+    translateY = e.clientY - startY;
+    updateTransform();
+  });
+
+  // 鼠标松开
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
+  // 滚轮缩放 (以鼠标位置为中心)
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    
+    // 滚轮向上放大(1.1)，向下缩小(0.9)
+    const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = scale * zoomAmount;
+
+    // 限制缩放范围：最小0.8(差不多看到一个地球)，最大8(放大到局部)
+    if (newScale < 0.8 || newScale > 8) return;
+
+    // 计算鼠标相对于容器左上角的位置
+    const rect = container.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // 根据鼠标位置重新计算 translate 偏移量，实现“向鼠标处放大”
+    translateX = mouseX - (mouseX - translateX) * (newScale / scale);
+    translateY = mouseY - (mouseY - translateY) * (newScale / scale);
+    
+    scale = newScale;
+    updateTransform();
+  });
+
+  // 初始化地图位置(居中)
+  function initMap() {
+    const rect = container.getBoundingClientRect();
+    // 让地图居中(根据缩放比例微调)
+    translateX = (rect.width - rect.width * scale) / 2;
+    translateY = (rect.height - rect.height * scale) / 2;
+    updateTransform();
+  }
+  // 确保 DOM 加载完毕后再初始化
+  window.addEventListener('load', initMap);
+  window.addEventListener('resize', initMap); 
+
+  // --- 2. 时间和农历更新逻辑 ---
+  function updateTime() {
+    const now = new Date();
+    
+    // 获取上海时间 (24小时制)
+    const timeStr = now.toLocaleTimeString('zh-CN', { 
+      hour12: false, 
+      timeZone: 'Asia/Shanghai',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    document.getElementById('time-display').textContent = timeStr;
+
+    // 获取公历日期 (包含星期)
+    const dateStr = now.toLocaleDateString('zh-CN', { 
+      timeZone: 'Asia/Shanghai', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric', 
+      weekday: 'long' 
+    });
+
+    // 获取农历
+    let lunarStr = '';
+    try {
+      const lunar = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { 
+        timeZone: 'Asia/Shanghai', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }).format(now);
+      
+      // 简单的格式化农历字符串：将 "2026丙午年十月十二" 转换为 "农历十月十二"
+      // 提取月份和日期部分
+      const match = lunar.match(/(.*?年)(.*)/);
+      if (match && match[2]) {
+        lunarStr = `农历${match[2]}`;
+      } else {
+        lunarStr = lunar;
+      }
+    } catch(e) {
+      lunarStr = '农历获取失败';
+    }
+
+    document.getElementById('date-display').textContent = `${dateStr} · ${lunarStr}`;
+  }
+
+  // 每秒更新一次
+  setInterval(updateTime, 1000);
+  // 立即执行一次，防止开头出现 1 秒空白
+  updateTime();
+
+</script>
 </body>
 </html>

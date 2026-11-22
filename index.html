@@ -66,62 +66,78 @@
   /* 道路 */
   .map-road {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.05);
-    stroke-width: 14;
+    stroke: rgba(255, 255, 255, 0.04);
+    stroke-width: 12;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
   .map-road-line {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.15);
+    stroke: rgba(255, 255, 255, 0.1);
     stroke-width: 1;
-    stroke-dasharray: 8 8;
+    stroke-dasharray: 6 6;
   }
 
   /* 建筑底色 (简欧红砖风) */
   .map-building {
     fill: rgba(160, 80, 60, 0.08); 
-    stroke: rgba(255, 255, 255, 0.3);
-    stroke-width: 1.5;
+    stroke: rgba(255, 255, 255, 0.35);
+    stroke-width: 1.2;
     transition: all 0.5s ease;
+    stroke-linejoin: round;
   }
   
-  /* 高中部特殊标记 (对应你涂的蓝色) */
-  .building-high {
-    fill: rgba(52, 152, 219, 0.12);
-    stroke: rgba(52, 152, 219, 0.5);
+  /* 内部细节线 */
+  .building-detail {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 0.8;
+    pointer-events: none;
+    transition: all 0.5s ease;
+  }
+
+  /* 小学部特殊标记 (对应你涂的白色) */
+  .building-primary {
+    fill: rgba(205, 191, 158, 0.12);
+    stroke: rgba(205, 191, 158, 0.6);
   }
   /* 初中部特殊标记 (对应你涂的绿色) */
   .building-middle {
     fill: rgba(46, 204, 113, 0.12);
     stroke: rgba(46, 204, 113, 0.5);
   }
-  /* 小学部特殊标记 (对应你涂的白色) */
-  .building-primary {
-    fill: rgba(205, 191, 158, 0.12);
-    stroke: rgba(205, 191, 158, 0.6);
+  /* 高中部特殊标记 (对应你涂的蓝色) */
+  .building-high {
+    fill: rgba(52, 152, 219, 0.12);
+    stroke: rgba(52, 152, 219, 0.5);
   }
 
   /* 操场纵向样式 */
   .track-red {
-    fill: rgba(231, 76, 60, 0.12);
+    fill: rgba(231, 76, 60, 0.1);
     stroke: rgba(231, 76, 60, 0.3);
     stroke-width: 1;
   }
   .track-green {
-    fill: rgba(46, 204, 113, 0.12);
-    stroke: rgba(46, 204, 113, 0.25);
+    fill: rgba(46, 204, 113, 0.1);
+    stroke: rgba(46, 204, 113, 0.2);
     stroke-width: 1;
   }
   .court-blue {
-    fill: rgba(52, 152, 219, 0.15);
+    fill: rgba(52, 152, 219, 0.12);
     stroke: rgba(52, 152, 219, 0.4);
     stroke-width: 1;
   }
 
+  /* 绿化点缀 */
+  .tree-dot {
+    fill: rgba(46, 204, 113, 0.2);
+    stroke: none;
+  }
+
   .map-label {
     font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 15px;
+    font-size: 14px;
     fill: #ffffff;
     opacity: 0.4; 
     text-anchor: middle;
@@ -135,6 +151,9 @@
     stroke: #60a5fa; 
     fill: rgba(59, 130, 246, 0.1); 
   }
+  .show-details .building-detail {
+    stroke: rgba(96, 165, 250, 0.4);
+  }
   .show-details .building-high { stroke: #3b82f6; fill: rgba(59, 130, 246, 0.2); }
   .show-details .building-middle { stroke: #10b981; fill: rgba(16, 185, 129, 0.2); }
   .show-details .building-primary { stroke: #fcd34d; fill: rgba(252, 211, 77, 0.2); }
@@ -147,6 +166,7 @@
   .show-details .map-road { stroke: rgba(96, 165, 250, 0.15); }
   .show-details .track-red { stroke: #ef4444; }
   .show-details .court-blue { stroke: #3b82f6; }
+  .show-details .tree-dot { fill: rgba(16, 185, 129, 0.5); }
 
   /* --- 顶部导航栏 --- */
   .topbar {
@@ -245,85 +265,72 @@
     
     <div class="map-container" id="mapContainer">
       <div class="map-inner" id="mapInner">
-        <!-- 金山世外真实布局图 (精准比例修正版) -->
+        <!-- 金山世外精细不规则轮廓版 -->
         <svg class="map-svg" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg">
           
           <!-- 道路 -->
           <g>
-            <path class="map-road" d="M 0,420 L 280,420 Q 380,420 430,360" />
-            <path class="map-road-line" d="M 0,420 L 280,420 Q 380,420 430,360" />
+            <path class="map-road" d="M -50,420 Q 150,430 250,410 Q 350,390 420,330 L 500,250" />
+            <path class="map-road-line" d="M -50,420 Q 150,430 250,410 Q 350,390 420,330 L 500,250" />
+            <path class="map-road" d="M 850,200 Q 900,300 850,400 L 850,600" />
+            <path class="map-road-line" d="M 850,200 Q 900,300 850,400 L 850,600" />
           </g>
 
-          <!-- 左侧大操场 (纵向) -->
+          <!-- 左侧大操场 (带精细跑道圈) -->
           <g>
-            <rect class="track-red" x="80" y="150" width="320" height="700" rx="160" />
-            <rect class="track-green" x="120" y="220" width="240" height="560" rx="120" />
-            <line x1="80" y1="360" x2="400" y2="360" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
-            <line x1="80" y1="640" x2="400" y2="640" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <path class="track-red" d="M 120,180 L 350,180 A 140,140 0 0 1 490,320 L 490,700 A 140,140 0 0 1 350,840 L 120,840 A 140,140 0 0 1 -20,700 L -20,320 A 140,140 0 0 1 120,180 Z" />
+            <path class="track-green" d="M 160,230 L 320,230 A 100,100 0 0 1 420,330 L 420,690 A 100,100 0 0 1 320,790 L 160,790 A 100,100 0 0 1 60,690 L 60,330 A 100,100 0 0 1 160,230 Z" />
+            <!-- 跑道细分线 -->
+            <path class="building-detail" d="M 80,180 L 80,840 M 40,180 L 40,840" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
           </g>
 
-          <!-- 右侧小操场 (纵向) -->
+          <!-- 右侧小操场 -->
           <g>
-            <rect class="track-red" x="1150" y="180" width="240" height="450" rx="120" />
-            <rect class="track-green" x="1180" y="240" width="180" height="330" rx="90" />
+            <path class="track-red" d="M 1200,220 L 1380,220 A 110,110 0 0 1 1490,330 L 1490,550 A 110,110 0 0 1 1380,660 L 1200,660 A 110,110 0 0 1 1090,550 L 1090,330 A 110,110 0 0 1 1200,220 Z" />
+            <path class="track-green" d="M 1230,260 L 1360,260 A 80,80 0 0 1 1440,340 L 1440,540 A 80,80 0 0 1 1360,620 L 1230,620 A 80,80 0 0 1 1150,540 L 1150,340 A 80,80 0 0 1 1230,260 Z" />
           </g>
 
-          <!-- ================= 核心建筑群 (严格按你的红线图比例) ================= -->
+          <!-- ================= 核心建筑群 (不规则折线描绘) ================= -->
           <g>
-            <!-- 左上角：食堂&体育馆 (大面积不规则) -->
-            <path class="map-building" d="M 100,60 L 300,40 L 380,160 L 260,200 L 150,200 Z" />
-            <!-- 内部看台/场地线条 -->
-            <ellipse cx="200" cy="110" rx="40" ry="20" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
-            <line x1="160" y1="150" x2="320" y2="120" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <!-- 左上角：食堂&体育馆 (不规则大块) -->
+            <path class="map-building" d="M 110,70 L 150,55 L 280,45 L 340,90 L 380,140 L 360,190 L 290,220 L 200,210 L 160,230 L 100,200 L 80,150 Z" />
+            <path class="building-detail" d="M 150,80 L 250,70 L 320,120 L 300,180 Z M 120,150 L 220,140 L 260,180" />
+
+            <!-- 小剧场 (多边形) -->
+            <path class="map-building" d="M 350,170 L 400,145 L 450,160 L 480,200 L 440,235 L 380,225 Z" />
+
+            <!-- 右上角：宿舍 (两栋斜向排列长条) -->
+            <path class="map-building" d="M 980,50 L 1350,70 L 1380,110 L 1340,140 L 960,120 Z" />
+            <path class="map-building" d="M 1000,160 L 1360,180 L 1390,220 L 1350,250 L 980,230 Z" />
+
+            <!-- ================= 教学区 ================= -->
             
-            <!-- 小剧场 (紧挨食堂右侧) -->
-            <path class="map-building" d="M 340,170 L 400,150 L 440,210 L 380,230 Z" />
-
-            <!-- 右上角：宿舍 (横向长条) -->
-            <path class="map-building" d="M 950,60 L 1350,60 L 1400,110 L 1400,150 L 900,150 Z" />
-
-            <!-- ================= 三大教学部连体建筑 ================= -->
-            
-            <!-- 1. 小学部/明理楼 (白色标注 - 顶部，不规则折线) -->
+            <!-- 1. 小学部/明理楼 (白色) 顶部复杂折线 -->
             <g class="building-primary">
-              <!-- 主楼上半部 -->
-              <path class="map-building" d="M 480,220 L 680,220 L 680,280 L 560,280 Z" />
-              <!-- 主楼右翼向右下延伸 -->
-              <path class="map-building" d="M 680,220 L 850,220 L 850,280 L 680,280 Z" />
-              <!-- 连廊向下连接初中部 -->
-              <rect class="map-building" x="680" y="280" width="40" height="150" />
+              <path class="map-building" d="M 460,240 L 520,225 L 580,240 L 640,230 L 680,260 L 680,280 L 780,270 L 830,290 L 850,320 L 820,350 L 730,330 L 680,350 L 660,320 L 600,310 L 560,330 L 460,290 Z" />
+              <path class="building-detail" d="M 520,250 L 650,250 M 700,280 L 800,290" />
+              <!-- 连廊下沉 -->
+              <path class="map-building" d="M 680,350 L 720,350 L 720,440 L 680,440 Z" />
             </g>
 
-            <!-- 2. 初中部 (绿色标注 - 中部，宽大H型/日字型) -->
+            <!-- 2. 初中部 (绿色) 中部错落H型 -->
             <g class="building-middle">
-              <!-- 上排教学楼 -->
-              <rect class="map-building" x="480" y="430" width="400" height="60" rx="4" />
-              <!-- 下排教学楼 -->
-              <rect class="map-building" x="480" y="530" width="400" height="60" rx="4" />
-              <!-- 左侧连廊 -->
-              <rect class="map-building" x="480" y="430" width="50" height="160" />
-              <!-- 中间天井/活动区 -->
-              <rect class="map-building" x="600" y="490" width="100" height="40" fill="rgba(0,0,0,0.1)"/>
-              <!-- 右侧连廊延伸 -->
-              <rect class="map-building" x="830" y="430" width="50" height="160" />
+              <!-- 左翼主楼 -->
+              <path class="map-building" d="M 480,450 L 680,440 L 690,500 L 630,510 L 630,560 L 550,570 L 490,560 L 460,510 Z" />
+              <!-- 右翼主楼 (稍微靠后和右) -->
+              <path class="map-building" d="M 750,440 L 920,460 L 950,490 L 910,540 L 880,570 L 750,550 L 720,500 Z" />
+              <!-- 中间连接部 -->
+              <path class="map-building" d="M 680,470 L 750,460 L 760,530 L 690,540 Z" />
+              <path class="building-detail" d="M 510,480 L 600,480 M 760,480 L 890,490" />
             </g>
 
-            <!-- 3. 高中部 (蓝色标注 - 底部，宽大连体建筑) -->
+            <!-- 3. 高中部 (蓝色) 底部宽大连体 -->
             <g class="building-high">
-              <!-- 上排教学楼 -->
-              <rect class="map-building" x="550" y="630" width="480" height="60" rx="4" />
-              <!-- 下排教学楼 -->
-              <rect class="map-building" x="550" y="730" width="480" height="60" rx="4" />
-              <!-- 左侧连廊 -->
-              <rect class="map-building" x="550" y="630" width="40" height="160" />
-              <!-- 右侧连廊 -->
-              <rect class="map-building" x="990" y="630" width="40" height="160" />
+              <path class="map-building" d="M 560,640 L 700,630 L 720,610 L 800,610 L 820,630 L 1020,640 L 1050,680 L 1020,730 L 900,750 L 850,720 L 780,740 L 700,730 L 650,750 L 540,720 Z" />
+              <!-- 内部结构线 -->
+              <path class="building-detail" d="M 600,680 L 950,690 M 620,710 L 850,715" />
             </g>
-
-            <!-- 连接初中部与高中部的中央核心连廊 -->
-            <rect class="map-building" x="700" y="590" width="40" height="40" />
           </g>
-          <!-- ========================================================== -->
 
           <!-- 左下角室外球场 -->
           <g>
@@ -336,37 +343,53 @@
 
           <!-- 右下角：东侧操场南面的蓝色球场 -->
           <g>
-            <rect class="court-blue" x="1150" y="680" width="240" height="80" rx="4" />
-            <line x1="1270" y1="680" x2="1270" y2="760" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+            <rect class="court-blue" x="1150" y="700" width="240" height="80" rx="4" />
+            <line x1="1270" y1="700" x2="1270" y2="780" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
           </g>
 
-          <!-- 南门中轴广场 -->
+          <!-- 南门中轴广场 (复杂几何园林) -->
           <g>
-            <ellipse class="map-building" cx="750" cy="850" rx="80" ry="100" />
-            <ellipse cx="750" cy="850" rx="50" ry="70" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
-            <ellipse cx="750" cy="850" rx="20" ry="30" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+            <path class="map-building" d="M 800,800 C 860,800 880,850 860,900 C 840,950 760,950 740,900 C 720,850 740,800 800,800 Z" />
+            <path class="building-detail" d="M 800,820 C 840,820 850,850 840,880 C 830,920 770,920 760,880 C 750,850 760,820 800,820 Z" />
+            <path class="building-detail" d="M 800,850 L 800,900 M 770,870 L 830,870" />
+          </g>
+
+          <!-- 绿化点缀 (散落的树木光点) -->
+          <g>
+            <circle cx="200" cy="300" r="4" class="tree-dot" />
+            <circle cx="250" cy="280" r="5" class="tree-dot" />
+            <circle cx="180" cy="350" r="3" class="tree-dot" />
+            <circle cx="450" cy="400" r="4" class="tree-dot" />
+            <circle cx="480" cy="420" r="5" class="tree-dot" />
+            <circle cx="430" cy="600" r="4" class="tree-dot" />
+            <circle cx="950" cy="350" r="5" class="tree-dot" />
+            <circle cx="980" cy="380" r="4" class="tree-dot" />
+            <circle cx="920" cy="600" r="5" class="tree-dot" />
+            <circle cx="1100" cy="700" r="4" class="tree-dot" />
+            <circle cx="550" cy="200" r="4" class="tree-dot" />
+            <circle cx="850" cy="800" r="3" class="tree-dot" />
           </g>
 
           <!-- 文字标签 -->
           <g>
-            <text class="map-label" x="60" y="420">西门</text>
-            <text class="map-label" x="750" y="980">南门</text>
+            <text class="map-label" x="60" y="440">西门</text>
+            <text class="map-label" x="800" y="980">南门</text>
             
-            <text class="map-label" x="240" y="500">大操场</text>
-            <text class="map-label" x="1270" y="400">小操场</text>
+            <text class="map-label" x="230" y="520">大操场</text>
+            <text class="map-label" x="1290" y="450">小操场</text>
             <text class="map-label" x="250" y="720">室外球场</text>
-            <text class="map-label" x="1270" y="650">蓝球场</text>
+            <text class="map-label" x="1270" y="680">蓝球场</text>
             
-            <text class="map-label" x="220" y="110">食堂&体育馆</text>
-            <text class="map-label" x="390" y="190">小剧场</text>
-            <text class="map-label" x="1150" y="110">宿舍</text>
+            <text class="map-label" x="240" y="120">食堂&体育馆</text>
+            <text class="map-label" x="410" y="190">小剧场</text>
+            <text class="map-label" x="1150" y="90">宿舍</text>
             
             <!-- 核心教学群精细化标签 -->
-            <text class="map-label" x="750" y="250">明理楼 (小学部)</text>
-            <text class="map-label" x="680" y="510">初中部</text>
-            <text class="map-label" x="790" y="710">高中部</text>
+            <text class="map-label" x="650" y="280">明理楼 (小学部)</text>
+            <text class="map-label" x="700" y="500">初中部</text>
+            <text class="map-label" x="800" y="690">高中部</text>
             
-            <text class="map-label" x="750" y="850" style="opacity: 0.2;">中轴广场</text>
+            <text class="map-label" x="800" y="870" style="opacity: 0.2;">中轴广场</text>
           </g>
 
         </svg>

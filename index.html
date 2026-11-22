@@ -30,7 +30,6 @@
     background: radial-gradient(circle at 50% 50%, #111116, #050508 80%);
     overflow: hidden;
     color: #f2ead8;
-    perspective: 1200px;
   }
 
   /* 动态星空 Canvas */
@@ -42,13 +41,15 @@
     pointer-events: none;
   }
 
-  /* --- 太阳系 3D 容器 --- */
+  /* --- 太阳系容器 (使用 2D 倾斜，避免 3D 拉伸) --- */
   .solar-system {
     position: absolute;
     top: 50%; left: 50%;
     width: 0; height: 0;
-    transform-style: preserve-3d;
     z-index: 1;
+    /* 整体倾斜，产生俯视椭圆的错觉 */
+    transform: translate(-50%, -50%) rotateX(65deg);
+    transform-style: preserve-3d;
     transition: transform 0.1s ease-out;
   }
 
@@ -57,17 +58,13 @@
     position: absolute;
     top: 50%; left: 50%;
     width: 120px; height: 120px;
-    /* 抵消透视变形，并定位到中心 */
-    transform: translate(-50%, -50%) translateZ(0) rotateX(-60deg);
+    /* 抵消容器的倾斜 */
+    transform: translate(-50%, -50%) rotateX(-65deg);
     border-radius: 50%;
-    /* 采用多重渐变模拟球体核心与表面日珥 */
-    background: 
-      radial-gradient(circle at 30% 30%, #ffffff 0%, #fff5cc 10%, #ffb300 35%, #ff3d00 65%, #7a0000 100%);
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #fff5cc 10%, #ffb300 35%, #ff3d00 65%, #7a0000 100%);
     box-shadow: 
-      /* 强烈的内阴影制造球体曲率 */
       inset -15px -15px 30px rgba(100, 0, 0, 0.9),
       inset 5px 5px 20px rgba(255, 255, 255, 0.5),
-      /* 外围光晕 */
       0 0 50px #ffb300,
       0 0 150px rgba(255, 61, 0, 0.6),
       0 0 250px rgba(255, 61, 0, 0.3);
@@ -85,120 +82,122 @@
     top: 50%; left: 50%;
     border: 1px dashed rgba(255, 255, 255, 0.08);
     border-radius: 50%;
-    transform-style: preserve-3d;
-    transform: translate(-50%, -50%) rotateX(75deg);
+    transform: translate(-50%, -50%);
   }
 
-  /* 行星通用基础 */
+  /* 行星通用基础 (抵消容器倾斜，保持立体正圆) */
   .planet {
     position: absolute;
     top: 50%; left: 50%;
     border-radius: 50%;
-    /* 抵消轨道倾斜，使其在屏幕上呈现正圆，并保留立体感 */
-    transform: translate(-50%, -50%) rotateX(-75deg);
-    transform-style: preserve-3d;
-    /* 基础球体阴影，让它看起来是突出来的 */
-    box-shadow: inset -6px -6px 15px rgba(0,0,0,0.9);
+    transform: translate(-50%, -50%) rotateX(-65deg);
+    /* 极其强烈的内阴影，制造立体球体感 */
+    box-shadow: inset -6px -6px 15px rgba(0,0,0,0.95);
   }
 
-  /* 高光点：在每个星球前叠加一个半透明白色光斑，极大提升立体感 */
-  .planet::after {
+  /* 高光层：所有行星共享的左侧受光点 */
+  .planet::before {
     content: '';
     position: absolute;
     top: 15%; left: 15%;
-    width: 30%; height: 30%;
-    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+    width: 40%; height: 40%;
+    background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
     border-radius: 50%;
     pointer-events: none;
   }
 
-  /* ================== 立体星球材质 ================== */
+  /* ================== 极致立体的星球材质 ================== */
   
-  /* 水星 (凹凸岩石质感) */
+  /* 水星 (灰褐岩石) */
   .mercury {
-    width: 12px; height: 12px;
-    background: radial-gradient(circle at 30% 30%, #999, #444 80%);
+    width: 14px; height: 14px;
+    background: radial-gradient(circle at 30% 30%, #a8a8a8, #444 80%);
   }
   
-  /* 金星 (厚重云层) */
+  /* 金星 (厚重黄云) */
   .venus {
-    width: 18px; height: 18px;
-    background: radial-gradient(circle at 30% 30%, #ffe4a0, #d49a47 60%, #5c350b 100%);
+    width: 22px; height: 22px;
+    background: radial-gradient(circle at 30% 30%, #fff0b3, #d49a47 60%, #5c350b 100%);
   }
   
-  /* 地球 (立体海洋与陆地) */
+  /* 地球 (海洋、陆地与大气层) */
   .earth {
-    width: 20px; height: 20px;
+    width: 24px; height: 24px;
     background: 
-      /* 模拟云层反光 */
-      radial-gradient(circle at 60% 40%, rgba(255,255,255,0.4) 5%, transparent 20%),
-      /* 陆地 */
+      /* 云层反光 */
+      radial-gradient(circle at 65% 35%, rgba(255,255,255,0.5) 5%, transparent 20%),
+      /* 陆地 (绿色斑块) */
       radial-gradient(circle at 25% 35%, #2ecc71 10%, #27ae60 20%, transparent 25%),
       radial-gradient(circle at 70% 65%, #2ecc71 15%, #27ae60 25%, transparent 35%),
       /* 海洋底色 */
       radial-gradient(circle at 30% 30%, #6bb9ff, #1d6eaa 60%, #051d33 100%);
+    /* 地球独有的外圈蓝色大气层光晕 */
+    box-shadow: 
+      inset -6px -6px 15px rgba(0,0,0,0.9),
+      0 0 10px rgba(79, 163, 255, 0.6);
   }
   
-  /* 火星 (红褐铁锈) */
+  /* 火星 (红褐荒漠) */
   .mars {
-    width: 16px; height: 16px;
+    width: 18px; height: 18px;
     background: radial-gradient(circle at 30% 30%, #ff8c66, #b03010 60%, #3d0800 100%);
   }
   
-  /* 木星 (强烈的平行气流条纹) */
+  /* 木星 (强烈的球面气流条纹) */
   .jupiter {
-    width: 50px; height: 50px;
-    background: linear-gradient(
-      to bottom,
-      #d4c4a8 5%, #b89270 15%, #e8d5b5 25%, #a87755 35%, 
-      #e8d5b5 45%, #b89270 55%, #e8d5b5 65%, #a87755 75%, 
-      #d4c4a8 85%, #b89270 95%
-    );
-    /* 木星专属强阴影 */
-    box-shadow: 
-      inset -10px -10px 25px rgba(0,0,0,0.95),
-      inset 3px 3px 10px rgba(255,255,255,0.3);
+    width: 60px; height: 60px;
+    background: 
+      /* 球面暗角遮罩，让条纹产生弧度感 */
+      radial-gradient(circle at 30% 30%, transparent 20%, rgba(0,0,0,0.8) 90%),
+      /* 横向条纹 */
+      linear-gradient(
+        to bottom,
+        #d4c4a8 5%, #b89270 15%, #e8d5b5 25%, #a87755 35%, 
+        #e8d5b5 45%, #b89270 55%, #e8d5b5 65%, #a87755 75%, 
+        #d4c4a8 85%, #b89270 95%
+      );
+    box-shadow: inset -8px -8px 20px rgba(0,0,0,0.95);
   }
   
   /* 土星 (淡黄气体) */
   .saturn {
-    width: 44px; height: 44px;
+    width: 50px; height: 50px;
     background: radial-gradient(circle at 30% 30%, #f7e4b5, #c7a366 60%, #5c4010 100%);
-    box-shadow: inset -10px -10px 20px rgba(0,0,0,0.9);
   }
   
-  /* 天王星 (冰蓝色) */
+  /* 天王星 (冰蓝) */
   .uranus {
-    width: 30px; height: 30px;
+    width: 36px; height: 36px;
     background: radial-gradient(circle at 30% 30%, #c4fdfb, #3d9e9b 60%, #0d3d3b 100%);
   }
   
-  /* 海王星 (深蓝风暴) */
+  /* 海王星 (深蓝) */
   .neptune {
-    width: 28px; height: 28px;
+    width: 34px; height: 34px;
     background: radial-gradient(circle at 30% 30%, #85aaff, #2b55ba 60%, #08133d 100%);
   }
 
-  /* 土星环 (包裹感优化) */
+  /* 土星环 (具有遮挡关系的立体环) */
   .saturn-ring {
     position: absolute;
     top: 50%; left: 50%;
-    width: 100px; height: 26px;
-    border: 4px solid rgba(210, 180, 140, 0.6);
+    width: 110px; height: 30px;
+    border: 4px solid rgba(210, 180, 140, 0.7);
     border-radius: 50%;
+    /* 倾斜形成透视 */
     transform: translate(-50%, -50%) rotateX(75deg) rotateY(-15deg);
-    box-shadow: 0 0 10px rgba(210, 180, 140, 0.4), inset 0 0 10px rgba(0,0,0,0.6);
+    box-shadow: 0 0 10px rgba(210, 180, 140, 0.3), inset 0 0 10px rgba(0,0,0,0.6);
     pointer-events: none;
   }
 
-  /* 月球轨道 */
+  /* 地球的月球 (小立体球) */
   .moon-orbit {
     position: absolute;
     top: 50%; left: 50%;
-    width: 50px; height: 50px;
+    width: 45px; height: 45px;
     border: 1px dashed rgba(255,255,255,0.15);
     border-radius: 50%;
-    transform: translate(-50%, -50%) rotateX(75deg);
+    transform: translate(-50%, -50%);
     animation: spinMoon 4s linear infinite;
     pointer-events: none;
   }
@@ -206,14 +205,14 @@
     position: absolute;
     top: 0; left: 50%;
     width: 6px; height: 6px;
-    background: radial-gradient(circle at 30% 30%, #fff, #888);
+    background: radial-gradient(circle at 30% 30%, #fff, #777);
     border-radius: 50%;
-    transform: translate(-50%, -50%) rotateX(-75deg);
-    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.9);
+    transform: translate(-50%, -50%);
+    box-shadow: inset -1px -1px 3px rgba(0,0,0,0.9);
   }
   @keyframes spinMoon {
-    from { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
-    to { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+    from { transform: translate(-50%, -50%) rotateZ(0deg); }
+    to { transform: translate(-50%, -50%) rotateZ(360deg); }
   }
 
   /* --- 顶部导航栏 --- */
@@ -264,7 +263,7 @@
   .dropdown-menu li a { display: block; padding: 12px 24px; font-size: 15px; letter-spacing: 0.1em; text-align: center; white-space: nowrap; }
   .dropdown-menu li a:hover { background: rgba(37, 99, 235, 0.3); transform: none; }
 
-  /* --- 中心文字 --- */
+  /* --- 中心文字 (浮在最上层) --- */
   .at {
     position: absolute;
     left: 50%;
@@ -273,8 +272,6 @@
     text-align: center;
     pointer-events: none;
     z-index: 10;
-    transform-style: preserve-3d;
-    translate: 0 0 120px; 
   }
 
   .title-time {
@@ -315,9 +312,7 @@
     <canvas id="starfield"></canvas>
 
     <div class="solar-system" id="solarSystem">
-      <!-- 太阳 (独立在中心) -->
       <div class="sun"></div>
-      <!-- 行星容器 -->
       <div id="planetContainer"></div>
     </div>
 
@@ -360,7 +355,7 @@
 
   function initStars() {
     stars = [];
-    const numStars = 250; 
+    const numStars = 300; 
     for (let i = 0; i < numStars; i++) {
       stars.push({
         x: Math.random() * width,
@@ -412,14 +407,14 @@
   // 2. 太阳系行星逻辑
   // ==========================================
   const planetData = [
-    { id: 'mercury', rx: 140, ry: 55, speed: 0.015 },
-    { id: 'venus',   rx: 200, ry: 80, speed: 0.01 },
-    { id: 'earth',   rx: 270, ry: 110, speed: 0.008, hasMoon: true },
-    { id: 'mars',    rx: 340, ry: 140, speed: 0.006 },
-    { id: 'jupiter', rx: 470, ry: 200, speed: 0.004 },
-    { id: 'saturn',  rx: 600, ry: 260, speed: 0.003, hasRing: true },
-    { id: 'uranus',  rx: 720, ry: 310, speed: 0.002 },
-    { id: 'neptune', rx: 840, ry: 360, speed: 0.0015 }
+    { id: 'mercury', rx: 140, ry: 60, speed: 0.015 },
+    { id: 'venus',   rx: 210, ry: 90, speed: 0.01 },
+    { id: 'earth',   rx: 290, ry: 125, speed: 0.008, hasMoon: true },
+    { id: 'mars',    rx: 370, ry: 160, speed: 0.006 },
+    { id: 'jupiter', rx: 520, ry: 225, speed: 0.004 },
+    { id: 'saturn',  rx: 660, ry: 285, speed: 0.003, hasRing: true },
+    { id: 'uranus',  rx: 790, ry: 340, speed: 0.002 },
+    { id: 'neptune', rx: 920, ry: 400, speed: 0.0015 }
   ];
 
   const container = document.getElementById('planetContainer');
@@ -461,9 +456,10 @@
     });
   });
 
-  let currentRotX = 60;
+  // 交互变量
+  let currentRotX = 65;
   let currentRotY = 0;
-  let targetRotX = 60;
+  let targetRotX = 65;
   let targetRotY = 0;
   let currentScale = 1;
   let targetScale = 1;
@@ -474,12 +470,13 @@
   stage.addEventListener('mousemove', (e) => {
     const x = e.clientX / window.innerWidth - 0.5;
     const y = e.clientY / window.innerHeight - 0.5;
-    targetRotX = 60 - (y * 60); 
-    targetRotY = x * 60;        
+    // 鼠标控制整个系统的倾斜角和旋转
+    targetRotX = 65 - (y * 40); 
+    targetRotY = x * 40;        
   });
 
   stage.addEventListener('mouseleave', () => {
-    targetRotX = 60;
+    targetRotX = 65;
     targetRotY = 0;
   });
 
@@ -496,19 +493,21 @@
     const delta = (time - lastTime) / 16.66; 
     lastTime = time;
 
+    // 平滑过渡鼠标造成的倾斜
     currentRotX += (targetRotX - currentRotX) * 0.05;
     currentRotY += (targetRotY - currentRotY) * 0.05;
     currentScale += (targetScale - currentScale) * 0.05;
 
-    solarSystem.style.transform = `scale(${currentScale}) rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`;
+    // 整体缩放和旋转
+    solarSystem.style.transform = `translate(-50%, -50%) rotateX(${currentRotX}deg) rotateY(${currentRotY}deg) scale(${currentScale})`;
 
     planets.forEach(p => {
       p.angle += p.speed * delta;
       const x = Math.cos(p.angle) * p.rx;
       const y = Math.sin(p.angle) * p.ry;
       
-      // 行星在轨道上移动
-      p.el.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) rotateX(-75deg)`;
+      // 行星位移，并抵消父级的 X 轴倾斜，让其永远面向屏幕（保持立体）
+      p.el.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) rotateX(-65deg)`;
     });
 
     requestAnimationFrame(animate);

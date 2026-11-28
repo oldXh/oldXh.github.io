@@ -28,21 +28,37 @@
     z-index: -1; pointer-events: none;
   }
 
+  /* --- 统一顶部导航栏 --- */
   .topbar {
-    position: absolute;
-    left: 0; top: 0; width: 100%; height: 40px;
-    background: linear-gradient(90deg, rgba(30,58,138,0.8) 0%, rgba(37,99,235,0.8) 50%, rgba(30,58,138,0.8) 100%);
-    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 42px;
+    background: linear-gradient(90deg, rgba(30,58,138,0.6) 0%, rgba(37,99,235,0.7) 50%, rgba(30,58,138,0.6) 100%);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
-  .topbar a {
-    color: #ffffff; text-decoration: none; font-size: 15px; letter-spacing: 0.15em;
-    transition: transform 0.2s ease;
-  }
-  .topbar a:hover { transform: scale(1.1); }
 
-  /* --- 顶栏右侧：唤起系统计算器按钮 --- */
+  .topbar a {
+    color: #ffffff;
+    text-decoration: none;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    font-size: 16px;
+    letter-spacing: 0.15em;
+    display: inline-block;
+    transition: transform 0.2s ease;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+
+  .topbar a:hover { transform: scale(1.15); }
+
+  /* 右侧系统计算器按钮 */
   .topbar-btn {
     position: absolute;
     right: 14px;
@@ -84,7 +100,7 @@
     display: flex;
     width: 100%;
     height: 100%;
-    padding-top: 40px;
+    padding-top: 42px; /* 改为42px以适配新导航栏 */
   }
 
   /* --- 左侧输入区 --- */
@@ -239,7 +255,6 @@
   <div class="topbar">
     <a href="index.html">← 返回首页</a>
 
-    <!-- 唤起 Windows 系统计算器 -->
     <button class="topbar-btn" id="btn-calc" title="打开 Windows 自带计算器（Win+R → calc）">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -268,7 +283,6 @@
         <input type="text" id="equation-input" placeholder="例如: 3x - 1 = 0" autocomplete="off" spellcheck="false">
       </div>
 
-      <!-- 键盘布局参考 Desmos -->
       <div class="keyboard">
         <!-- 第1排 -->
         <div class="key-btn math" data-val="x">x</div>
@@ -396,11 +410,9 @@
     });
   }
 
-  // ===== 唤起 Windows 系统自带计算器 =====
   const btnCalc = document.getElementById('btn-calc');
 
   btnCalc.addEventListener('click', () => {
-    // Windows 注册的 calculator:// 协议，浏览器会询问是否打开外部应用
     let triggered = false;
     try {
       const link = document.createElement('a');
@@ -416,7 +428,6 @@
 
     printToTerminal('> 正在唤起系统计算器...');
 
-    // 若外部程序被成功拉起，页面通常会失去焦点
     setTimeout(() => {
       if (triggered && !document.hasFocus()) {
         printToTerminal('[成功] Windows 计算器已启动。', 'term-answer');
@@ -427,7 +438,6 @@
     }, 1200);
   });
 
-  // 辅助函数：分数格式化
   function formatResult(value) {
     if (Math.abs(value) < 1e-9) return "0"; 
     try {
@@ -450,7 +460,6 @@
 
     terminal.innerHTML = '';
     
-    // 符号预处理
     let eqStr = rawInput
       .replace(/\s+/g, '')
       .replace(/X/g, 'x')

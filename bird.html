@@ -1,606 +1,436 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>渡鸦路灯</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D 定位练习</title>
+    <!-- 引入 Three.js 引擎 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: #050508;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+        }
 
-  html, body {
-    width: 100%; height: 100%;
-    background: #0a0a0c;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
-    display: flex; align-items: center; justify-content: center;
-    touch-action: none;
-  }
+        /* 统一导航栏 */
+        .topbar {
+            position: fixed; left: 0; top: 0; width: 100%; height: 42px;
+            background: linear-gradient(90deg, rgba(30,58,138,0.6) 0%, rgba(37,99,235,0.7) 50%, rgba(30,58,138,0.6) 100%);
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .topbar a {
+            color: #ffffff; text-decoration: none; font-size: 16px;
+            font-family: "Songti SC", "SimSun", serif;
+            letter-spacing: 0.15em; transition: transform 0.2s ease;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        }
+        .topbar a:hover { transform: scale(1.15); }
 
-  /* ===== 统一导航栏 ===== */
-  .topbar {
-    position: fixed; left: 0; top: 0; width: 100%; height: 42px;
-    background: linear-gradient(90deg, rgba(30,58,138,0.6) 0%, rgba(37,99,235,0.7) 50%, rgba(30,58,138,0.6) 100%);
-    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  }
-  .topbar a {
-    color: #fff; text-decoration: none;
-    font-family: "Songti SC", "SimSun", serif;
-    font-size: 16px; letter-spacing: 0.15em;
-    transition: transform 0.2s ease;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  }
-  .topbar a:hover { transform: scale(1.15); }
+        /* 游戏画布 */
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0; left: 0;
+            cursor: none; /* 隐藏默认鼠标，使用自定义准星 */
+        }
 
-  /* ===== 主容器 ===== */
-  .stage {
-    position: relative;
-    width: 400px; max-width: 100vw;
-    height: 640px; max-height: 100vh;
-    margin-top: 42px;
-    background: radial-gradient(circle at 50% 30%, #1a1a22 0%, #0a0a0c 70%);
-    border-radius: 12px;
-    box-shadow: 0 10px 50px rgba(0,0,0,0.8);
-    overflow: hidden;
-    display: flex; flex-direction: column;
-    color: #e8e8ed;
-  }
+        /* 自定义准星 */
+        #crosshair {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px; height: 20px;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0; /* 游戏开始时显示 */
+            transition: opacity 0.3s;
+        }
+        #crosshair::before, #crosshair::after {
+            content: ''; position: absolute; background: #60a5fa;
+        }
+        #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
+        #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
+        #crosshair .dot {
+            position: absolute; top: 8px; left: 8px; width: 4px; height: 4px;
+            background: #fff; border-radius: 50%;
+        }
 
-  /* ===== 顶部状态区 ===== */
-  .status-bar {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 20px 8px;
-    font-size: 13px; color: #8a8a96;
-  }
-  .candle-slots {
-    display: flex; gap: 6px; align-items: center;
-  }
-  .candle {
-    width: 10px; height: 22px;
-    background: #2a2a32;
-    border-radius: 3px;
-    position: relative;
-    transition: background 0.4s, box-shadow 0.4s;
-  }
-  .candle.lit {
-    background: linear-gradient(to top, #f0b429, #ffdd66);
-    box-shadow: 0 0 10px rgba(240, 180, 41, 0.7);
-  }
-  .candle.lit::after {
-    content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-    width: 4px; height: 6px; background: #ffdd66;
-    border-radius: 50%; box-shadow: 0 0 6px #ffdd66;
-  }
+        /* HUD 计分板 */
+        #hud {
+            position: absolute;
+            top: 60px; left: 20px; right: 20px;
+            display: flex; justify-content: space-between;
+            pointer-events: none;
+            z-index: 10;
+            color: #f2ead8;
+            font-size: 20px;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        #hud span { color: #60a5fa; font-weight: bold; font-size: 28px; }
+        #accuracy { font-size: 14px; color: #cdbf9e; margin-top: 5px;}
 
-  .risk-label {
-    font-size: 12px; letter-spacing: 0.05em;
-    padding: 4px 10px; border-radius: 20px;
-    background: rgba(255,255,255,0.06);
-    transition: color 0.3s, background 0.3s;
-  }
-  .risk-label[data-level="safe"]   { color: #34c759; background: rgba(52,199,89,0.1); }
-  .risk-label[data-level="warn"]   { color: #f0b429; background: rgba(240,180,41,0.1); }
-  .risk-label[data-level="danger"] { color: #ff453a; background: rgba(255,69,58,0.15); }
+        /* 开始 / 结算 遮罩 */
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 5, 8, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: #f2ead8;
+            transition: opacity 0.3s;
+        }
+        #overlay.hidden { opacity: 0; pointer-events: none; }
+        
+        #overlay h1 { font-size: 36px; letter-spacing: 4px; margin-bottom: 10px; }
+        #overlay p { color: #cdbf9e; margin-bottom: 30px; font-size: 16px; letter-spacing: 1px; text-align: center; line-height: 1.6; }
+        
+        .stats-box {
+            display: flex; gap: 40px; margin-bottom: 30px;
+            text-align: center;
+        }
+        .stats-box div { font-size: 16px; color: #8a8a96; }
+        .stats-box strong { display: block; font-size: 32px; color: #60a5fa; margin-top: 5px; }
 
-  /* ===== 渡鸦路灯视觉区 ===== */
-  .raven-scene {
-    flex: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    position: relative;
-    padding: 10px 20px;
-  }
-  .raven-silhouette {
-    font-size: 64px;
-    filter: drop-shadow(0 0 20px rgba(240,180,41,0.25));
-    transition: transform 0.3s ease, opacity 0.3s;
-    user-select: none;
-  }
-  .raven-silhouette.gone { transform: translateY(-40px) scale(0.6); opacity: 0; }
-  .raven-taunt {
-    margin-top: 8px;
-    font-size: 13px; font-style: italic;
-    color: #8a8a96; text-align: center;
-    min-height: 20px;
-    max-width: 280px;
-    line-height: 1.5;
-  }
+        .btn {
+            padding: 14px 48px;
+            background: rgba(37, 99, 235, 0.2);
+            border: 1px solid rgba(96, 165, 250, 0.5);
+            color: #60a5fa;
+            border-radius: 30px;
+            font-size: 18px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .btn:hover {
+            background: rgba(37, 99, 235, 0.5);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+        }
 
-  /* ===== 当前物资卡片 ===== */
-  .loot-card {
-    margin: 12px 20px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 16px 18px;
-    display: flex; align-items: center; justify-content: space-between;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  .loot-card[data-rarity="purple"] { border-color: rgba(175,130,255,0.5); box-shadow: 0 0 20px rgba(175,130,255,0.08); }
-  .loot-card[data-rarity="gold"]   { border-color: rgba(240,180,41,0.5); box-shadow: 0 0 20px rgba(240,180,41,0.12); }
-  .loot-card[data-rarity="red"]    { border-color: rgba(255,69,58,0.6);  box-shadow: 0 0 24px rgba(255,69,58,0.15); }
-
-  .loot-info { display: flex; flex-direction: column; gap: 4px; }
-  .loot-name { font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
-  .loot-rarity { font-size: 12px; letter-spacing: 0.1em; }
-  .loot-card[data-rarity="purple"] .loot-rarity { color: #af82ff; }
-  .loot-card[data-rarity="gold"]   .loot-rarity { color: #f0b429; }
-  .loot-card[data-rarity="red"]    .loot-rarity { color: #ff453a; }
-  .loot-value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .loot-value span { font-size: 12px; color: #8a8a96; font-weight: 400; margin-left: 3px; }
-
-  /* ===== 操作按钮区 ===== */
-  .actions {
-    display: flex; gap: 10px;
-    padding: 12px 20px 24px;
-  }
-  .btn {
-    flex: 1;
-    padding: 14px 10px;
-    border: none; border-radius: 10px;
-    font-size: 15px; font-weight: 600;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.2s, opacity 0.2s;
-    font-family: inherit;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
-
-  .btn-feed {
-    background: #2e5bff; color: #fff;
-  }
-  .btn-feed:hover:not(:disabled) { background: #4a72ff; }
-
-  .btn-cashout {
-    background: rgba(255,255,255,0.08); color: #e8e8ed;
-    border: 1px solid rgba(255,255,255,0.15);
-  }
-  .btn-cashout:hover:not(:disabled) { background: rgba(255,255,255,0.14); }
-
-  .btn-new {
-    background: #f0b429; color: #0a0a0c;
-  }
-  .btn-new:hover:not(:disabled) { background: #ffcc4d; }
-
-  /* ===== 结算遮罩 ===== */
-  .overlay {
-    position: absolute; inset: 0;
-    background: rgba(10,10,12,0.92);
-    backdrop-filter: blur(6px);
-    display: none;
-    flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 30px;
-    text-align: center;
-    z-index: 50;
-  }
-  .overlay.show { display: flex; }
-  .overlay h2 { font-size: 24px; letter-spacing: 0.08em; margin-bottom: 8px; }
-  .overlay .sub { font-size: 14px; color: #8a8a96; margin-bottom: 24px; line-height: 1.6; }
-  .overlay .result-value {
-    font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums;
-    margin-bottom: 20px;
-  }
-  .overlay .result-value.up   { color: #34c759; }
-  .overlay .result-value.down { color: #ff453a; }
-  .overlay .taunt {
-    font-size: 13px; font-style: italic; color: #8a8a96;
-    margin-bottom: 24px; max-width: 300px; line-height: 1.6;
-  }
-
-  /* 登录框复用之前的深色风格，略 */
-  #auth-modal {
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,0.8);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100; backdrop-filter: blur(8px);
-  }
-  .auth-box {
-    background: #1c1c22; border: 1px solid #3a3a44;
-    padding: 28px 24px; border-radius: 14px; width: 300px;
-    text-align: center; color: #e8e8ed;
-  }
-  .auth-box h2 { font-size: 20px; letter-spacing: 2px; margin-bottom: 18px; }
-  .auth-box input {
-    width: 100%; padding: 11px 12px; margin: 6px 0;
-    background: #121216; border: 1px solid #3a3a44; border-radius: 8px;
-    color: #e8e8ed; outline: none; font-size: 15px; font-family: inherit;
-  }
-  .auth-box input:focus { border-color: #5b8cff; }
-  .auth-btn {
-    width: 100%; padding: 12px; margin-top: 12px;
-    background: #2e5bff; color: #fff; border: none; border-radius: 8px;
-    font-size: 15px; font-weight: 600; cursor: pointer;
-  }
-  .auth-switch { margin-top: 12px; font-size: 12px; color: #8a8a96; cursor: pointer; }
-  .auth-error { color: #ff453a; font-size: 12px; margin-top: 8px; min-height: 16px; }
-
-  .highscore-tag {
-    position: absolute; top: 58px; right: 16px;
-    font-size: 12px; color: #f0b429;
-    background: rgba(18,18,22,0.8);
-    padding: 5px 10px; border-radius: 6px;
-    border: 1px solid rgba(240,180,41,0.2);
-    z-index: 10;
-  }
-</style>
+        .hit-marker {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            color: #ff453a; font-size: 24px; font-weight: bold;
+            pointer-events: none; z-index: 11; opacity: 0;
+            transition: opacity 0.1s, transform 0.1s;
+        }
+        .hit-marker.active { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    </style>
 </head>
 <body>
 
 <div class="topbar">
-  <a href="index.html">← 返回首页</a>
+    <a href="index.html">← 返回首页</a>
 </div>
 
-<div class="highscore-tag" id="highscore-tag">最佳撤离: —</div>
+<div id="game-container"></div>
 
-<div class="stage">
+<div id="crosshair"><div class="dot"></div></div>
+<div class="hit-marker" id="hit-marker">×</div>
 
-  <!-- 状态栏：蜡烛 + 风险 -->
-  <div class="status-bar">
-    <div class="candle-slots" id="candle-slots">
-      <div class="candle"></div><div class="candle"></div><div class="candle"></div>
-      <div class="candle"></div><div class="candle"></div><div class="candle"></div>
+<div id="hud">
+    <div>
+        命中: <span id="score">0</span>
+        <div id="accuracy">准确率: 100%</div>
     </div>
-    <span class="risk-label" id="risk-label" data-level="safe">安全</span>
-  </div>
-
-  <!-- 渡鸦场景 -->
-  <div class="raven-scene">
-    <div class="raven-silhouette" id="raven">🦅</div>
-    <div class="raven-taunt" id="raven-taunt">“把东西放下，让我看看你的诚意。”</div>
-  </div>
-
-  <!-- 当前物资 -->
-  <div class="loot-card" id="loot-card" data-rarity="purple">
-    <div class="loot-info">
-      <div class="loot-name" id="loot-name">紫货·战术手电</div>
-      <div class="loot-rarity" id="loot-rarity">紫色品质</div>
-    </div>
-    <div class="loot-value"><span id="loot-value-num">1,200</span><span>哈夫币</span></div>
-  </div>
-
-  <!-- 操作按钮 -->
-  <div class="actions">
-    <button class="btn btn-cashout" id="btn-cashout" disabled>带着撤离</button>
-    <button class="btn btn-feed" id="btn-feed">投喂渡鸦</button>
-  </div>
-
-  <!-- 结算遮罩 -->
-  <div class="overlay" id="overlay">
-    <h2 id="overlay-title">撤离成功</h2>
-    <div class="sub" id="overlay-sub"></div>
-    <div class="result-value" id="overlay-value"></div>
-    <div class="taunt" id="overlay-taunt"></div>
-    <button class="btn btn-new" id="btn-new" style="width:180px;">下一盏路灯</button>
-  </div>
-
+    <div>时间: <span id="time">30</span>s</div>
 </div>
 
-<!-- 登录框（复用逻辑，样式略调） -->
-<div id="auth-modal">
-  <div class="auth-box">
-    <h2 id="auth-title">干员登录</h2>
-    <input type="text" id="username" placeholder="干员代号" autocomplete="off">
-    <input type="password" id="password" placeholder="密码" autocomplete="off">
-    <button class="auth-btn" id="btn-auth-submit">登 录</button>
-    <div class="auth-switch" id="auth-switch">没有账号？去注册</div>
-    <div class="auth-error" id="auth-error"></div>
-  </div>
+<div id="overlay">
+    <h1>3D 定位训练</h1>
+    <p>移动鼠标控制视角，<strong>点击鼠标左键</strong>射击蓝色靶子。<br>建议使用电脑游玩，移动端体验受限。</p>
+    <div id="result-stats" class="stats-box" style="display:none;">
+        <div>最终得分<strong id="final-score">0</strong></div>
+        <div>命中率<strong id="final-accuracy">0%</strong></div>
+    </div>
+    <button class="btn" id="btn-start">点击开始</button>
 </div>
 
 <script>
-/* ================= 账号系统（与原 bird.html 一致，仅最高分含义改为“最佳撤离价值”） ================= */
-const authModal = document.getElementById('auth-modal');
-const authTitle = document.getElementById('auth-title');
-const inputUser = document.getElementById('username');
-const inputPass = document.getElementById('password');
-const btnSubmit = document.getElementById('btn-auth-submit');
-const authSwitch = document.getElementById('auth-switch');
-const authError = document.getElementById('auth-error');
-const highscoreTag = document.getElementById('highscore-tag');
+    // ================= 基础变量 =================
+    const container = document.getElementById('game-container');
+    const overlay = document.getElementById('overlay');
+    const btnStart = document.getElementById('btn-start');
+    const crosshair = document.getElementById('crosshair');
+    const hud = document.getElementById('hud');
+    const scoreEl = document.getElementById('score');
+    const timeEl = document.getElementById('time');
+    const accEl = document.getElementById('accuracy');
+    const hitMarker = document.getElementById('hit-marker');
+    const finalScoreEl = document.getElementById('final-score');
+    const finalAccuracyEl = document.getElementById('final-accuracy');
+    const resultStats = document.getElementById('result-stats');
 
-let isLoginMode = true;
-let currentUser = null;
+    let scene, camera, renderer, raycaster;
+    let targets = [];
+    let isPlaying = false;
+    let score = 0;
+    let shotsFired = 0;
+    let shotsHit = 0;
+    let timeLeft = 30;
+    let timerInterval;
 
-function checkAuth() {
-  const savedUser = localStorage.getItem('bird_current_user');
-  if (savedUser) {
-    currentUser = savedUser;
-    authModal.style.display = 'none';
-    updateHighscoreUI();
-  } else {
-    authModal.style.display = 'flex';
-  }
-}
+    // 视角控制变量
+    let yaw = 0; // 左右
+    let pitch = 0; // 上下
+    const mouseSensitivity = 0.002;
+    let isLocked = false;
 
-authSwitch.addEventListener('click', () => {
-  isLoginMode = !isLoginMode;
-  authTitle.textContent = isLoginMode ? '干员登录' : '干员注册';
-  btnSubmit.textContent = isLoginMode ? '登 录' : '注 册';
-  authSwitch.textContent = isLoginMode ? '没有账号？去注册' : '已有账号？去登录';
-  authError.textContent = '';
-});
+    // ================= 初始化 Three.js =================
+    function init() {
+        // 1. 场景
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0c);
+        // 添加一点雾效，让远处的靶子有纵深感
+        scene.fog = new THREE.FogExp2(0x0a0a0c, 0.02);
 
-btnSubmit.addEventListener('click', () => {
-  const u = inputUser.value.trim();
-  const p = inputPass.value.trim();
-  authError.textContent = '';
-  if (!u || !p) { authError.textContent = '代号和密码不能为空'; return; }
+        // 2. 相机 (FPS 视角)
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 1.6, 0); // 视觉高度 1.6m
+        camera.rotation.order = 'YXZ'; // 防止视角翻滚
 
-  let users = JSON.parse(localStorage.getItem('bird_users') || '{}');
+        // 3. 渲染器
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
 
-  if (isLoginMode) {
-    if (!users[u]) authError.textContent = '该干员不存在';
-    else if (users[u].password !== p) authError.textContent = '密码错误';
-    else {
-      currentUser = u;
-      localStorage.setItem('bird_current_user', u);
-      authModal.style.display = 'none';
-      updateHighscoreUI();
+        // 4. 光线
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        
+        const dirLight = new THREE.DirectionalLight(0x60a5fa, 1);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+
+        // 5. 地面网格 (增加空间感，符合你的网站风格)
+        const gridHelper = new THREE.GridHelper(100, 100, 0x1c1c20, 0x111116);
+        scene.add(gridHelper);
+
+        // 6. 射线检测器 (用于射击判定)
+        raycaster = new THREE.Raycaster();
+
+        // 事件监听
+        window.addEventListener('resize', onWindowResize);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('pointerlockchange', onPointerLockChange);
     }
-  } else {
-    if (users[u]) authError.textContent = '该代号已被注册';
-    else {
-      users[u] = { password: p, highScore: 0 };
-      localStorage.setItem('bird_users', JSON.stringify(users));
-      authError.style.color = '#34c759';
-      authError.textContent = '注册成功！请登录';
-      isLoginMode = true;
-      authTitle.textContent = '干员登录';
-      btnSubmit.textContent = '登 录';
-      authSwitch.textContent = '没有账号？去注册';
+
+    // ================= 尺寸适配 =================
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
     }
-  }
-});
 
-function getBestValue() {
-  if (!currentUser) return 0;
-  const users = JSON.parse(localStorage.getItem('bird_users') || '{}');
-  return users[currentUser]?.highScore || 0;
-}
-
-function saveBestValue(v) {
-  if (!currentUser) return;
-  const users = JSON.parse(localStorage.getItem('bird_users') || '{}');
-  if (v > (users[currentUser].highScore || 0)) {
-    users[currentUser].highScore = v;
-    localStorage.setItem('bird_users', JSON.stringify(users));
-    updateHighscoreUI();
-  }
-}
-
-function updateHighscoreUI() {
-  const best = getBestValue();
-  highscoreTag.textContent = best > 0
-    ? `最佳撤离: ${best.toLocaleString()} 哈夫币`
-    : '最佳撤离: —';
-}
-
-/* ================= 渡鸦路灯博弈核心 ================= */
-
-// 品质档位：数值区间与显示名称（模拟紫 / 金 / 红）
-const RARITY = {
-  purple: { label: '紫色品质', min: 800,   max: 2500,   color: '#af82ff' },
-  gold:   { label: '金色品质', min: 2600,  max: 9000,   color: '#f0b429' },
-  red:    { label: '红色品质', min: 9500,  max: 30000,  color: '#ff453a' }
-};
-
-const LOOT_NAMES = {
-  purple: ['战术手电', '便携电台', '加密硬盘', '防弹插板', '战术匕首', '信号放大器', '夜视模块'],
-  gold:   ['军用处理器', '精密陀螺仪', '钛合金箱', '目标指示器', '高级光学镜头', '无人机核心'],
-  red:    ['非洲之心', '复苏呼吸机', '炫彩干员手办', '原型反应炉', '量子芯片']
-};
-
-const TAUNTS = [
-  '“皇室特供，欢迎品尝。”',
-  '“这点东西，也配喂渡鸦？”',
-  '“游戏开始了，小老鼠。”',
-  '“见好就收？你舍得吗。”',
-  '“再来一次，也许就翻身了。”'
-];
-
-const MAX_CANDLES = 6;
-
-const state = {
-  candles: 0,          // 已点亮蜡烛数
-  currentRarity: 'purple',
-  currentValue: 0,
-  currentName: '',
-  lampDead: false,     // 渡鸦已飞走，这盏灯报废
-  active: true         // 当前是否还能操作
-};
-
-// DOM
-const candleEls = document.querySelectorAll('#candle-slots .candle');
-const riskLabel = document.getElementById('risk-label');
-const ravenEl = document.getElementById('raven');
-const ravenTauntEl = document.getElementById('raven-taunt');
-const lootCard = document.getElementById('loot-card');
-const lootNameEl = document.getElementById('loot-name');
-const lootRarityEl = document.getElementById('loot-rarity');
-const lootValueEl = document.getElementById('loot-value-num');
-const btnFeed = document.getElementById('btn-feed');
-const btnCashout = document.getElementById('btn-cashout');
-const overlay = document.getElementById('overlay');
-const overlayTitle = document.getElementById('overlay-title');
-const overlaySub = document.getElementById('overlay-sub');
-const overlayValue = document.getElementById('overlay-value');
-const overlayTaunt = document.getElementById('overlay-taunt');
-const btnNew = document.getElementById('btn-new');
-
-/* ---------- 工具函数 ---------- */
-function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-function pickRarityForStart() {
-  // 开局固定给紫货，符合游戏设定：只能投喂紫色及以上
-  return 'purple';
-}
-
-function randomLoot(rarity) {
-  const r = RARITY[rarity];
-  const value = rand(r.min, r.max);
-  const pool = LOOT_NAMES[rarity];
-  const name = pool[rand(0, pool.length - 1)];
-  return { rarity, name, value };
-}
-
-function formatNum(n) { return n.toLocaleString('zh-CN'); }
-
-/* ---------- 渲染 ---------- */
-function renderCandles() {
-  candleEls.forEach((el, i) => {
-    el.classList.toggle('lit', i < state.candles);
-  });
-
-  const ratio = state.candles / MAX_CANDLES;
-  let level = 'safe';
-  if (ratio >= 0.7) level = 'danger';
-  else if (ratio >= 0.4) level = 'warn';
-
-  riskLabel.dataset.level = level;
-  riskLabel.textContent = level === 'safe' ? '安全' : level === 'warn' ? '风险上升' : '高风险';
-}
-
-function renderLoot() {
-  const r = RARITY[state.currentRarity];
-  lootCard.dataset.rarity = state.currentRarity;
-  lootNameEl.textContent = state.currentName;
-  lootRarityEl.textContent = r.label;
-  lootRarityEl.style.color = r.color;
-  lootValueEl.textContent = formatNum(state.currentValue);
-}
-
-function renderButtons() {
-  btnFeed.disabled = !state.active || state.lampDead || state.candles >= MAX_CANDLES;
-  btnCashout.disabled = !state.active || state.candles === 0 || state.lampDead;
-}
-
-/* ---------- 核心：投喂判定 ---------- */
-function feed() {
-  if (!state.active || state.lampDead || state.candles >= MAX_CANDLES) return;
-
-  // 消耗 1 根蜡烛的额度，先点亮
-  state.candles++;
-  renderCandles();
-
-  // 当前蜡烛数对应风险：没收概率从 ~8% 线性升至 ~55%（6根时）
-  const confiscateChance = 0.08 + (state.candles / MAX_CANDLES) * 0.47;
-  // 升级概率：基础 45%，蜡烛每多一根 +5%，与没收概率独立判定
-  const upgradeChance = 0.45 + state.candles * 0.05;
-
-  const roll = Math.random();
-
-  if (roll < confiscateChance) {
-    // —— 整蛊没收：渡鸦叼走物资，路灯报废 ——
-    state.lampDead = true;
-    state.active = false;
-    ravenEl.classList.add('gone');
-    ravenTauntEl.textContent = '“咕——多谢款待。”';
-
-    renderButtons();
-    showOverlay('looted');
-    return;
-  }
-
-  // 未没收：判定升级还是平换/降级
-  const upgradeRoll = Math.random();
-  let nextRarity = state.currentRarity;
-
-  if (upgradeRoll < upgradeChance) {
-    // 升级：紫→金，金→红；红不再升（封顶）
-    if (state.currentRarity === 'purple') nextRarity = 'gold';
-    else if (state.currentRarity === 'gold') nextRarity = 'red';
-    // 红保持红，但价值可能走高，算“升级惊喜”
-  } else {
-    // 平换 / 降级：同档位内重新随机，有几率掉一档（但不会掉回紫色以下）
-    const downgradeRoll = Math.random();
-    if (downgradeRoll < 0.4) {
-      // 降一档（红→金，金→紫；紫保持紫但取低值）
-      if (state.currentRarity === 'red') nextRarity = 'gold';
-      else if (state.currentRarity === 'gold') nextRarity = 'purple';
-      else nextRarity = 'purple';
+    // ================= 指针锁定 (FPS 视角核心) =================
+    function onPointerLockChange() {
+        if (document.pointerLockElement === renderer.domElement) {
+            isLocked = true;
+        } else {
+            isLocked = false;
+            // 如果游戏正在进行中，但退出了鼠标锁定，则暂停游戏
+            if (isPlaying) {
+                endGame();
+            }
+        }
     }
-    // 否则同档位重 roll
-  }
 
-  const newLoot = randomLoot(nextRarity);
-  // 如果同档位且重 roll 后价值低于原值，算平换/降级，仍然接受
-  state.currentRarity = newLoot.rarity;
-  state.currentName = newLoot.name;
-  state.currentValue = newLoot.value;
+    // ================= 鼠标移动 =================
+    function onMouseMove(e) {
+        if (!isLocked || !isPlaying) return;
 
-  renderLoot();
-  renderButtons();
+        const movementX = e.movementX || 0;
+        const movementY = e.movementY || 0;
 
-  // 渡鸦反馈台词
-  const tauntPool = state.candles >= 4
-    ? ['“蜡烛越多，我越饿。”', '“你还敢继续？”', '“再来一根，就告诉你。”']
-    : ['“还行，继续。”', '“有点意思了。”', '“下一个。”'];
-  ravenTauntEl.textContent = tauntPool[rand(0, tauntPool.length - 1)];
-}
+        yaw -= movementX * mouseSensitivity;
+        pitch -= movementY * mouseSensitivity;
 
-/* ---------- 撤离 ---------- */
-function cashout() {
-  if (!state.active || state.candles === 0 || state.lampDead) return;
-  state.active = false;
-  renderButtons();
-  showOverlay('cashout');
-}
+        // 限制上下视角，防止翻转（约 -85度 到 85度）
+        pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
 
-/* ---------- 结算遮罩 ---------- */
-function showOverlay(type) {
-  overlay.classList.add('show');
+        camera.rotation.y = yaw;
+        camera.rotation.x = pitch;
+    }
 
-  if (type === 'looted') {
-    overlayTitle.textContent = '渡鸦带着物资飞走了';
-    overlaySub.textContent = '这盏路灯的蜡烛全部熄灭，无法再投喂。';
-    overlayValue.textContent = '—';
-    overlayValue.className = 'result-value';
-    overlayTaunt.textContent = `“${TAUNTS[rand(0, TAUNTS.length - 1)]}”`;
-  } else if (type === 'cashout') {
-    const best = getBestValue();
-    const isNew = state.currentValue > best;
-    if (isNew) saveBestValue(state.currentValue);
+    // ================= 射击逻辑 =================
+    function onMouseDown(e) {
+        // 只有左键且处于锁定状态才射击
+        if (e.button !== 0 || !isLocked || !isPlaying) return;
 
-    overlayTitle.textContent = '撤离成功';
-    overlaySub.textContent = `你带着 ${state.currentName} 离开了渡鸦路灯。`;
-    overlayValue.textContent = `+${formatNum(state.currentValue)} 哈夫币`;
-    overlayValue.className = 'result-value up';
-    overlayTaunt.textContent = isNew ? '🎉 新的最佳撤离纪录' : `历史最佳: ${formatNum(best)} 哈夫币`;
-  }
-}
+        shotsFired++;
+        updateAccuracy();
 
-/* ---------- 新一局 ---------- */
-function newRound() {
-  state.candles = 0;
-  state.lampDead = false;
-  state.active = true;
+        // 1. 设置射线起点和方向为屏幕正中心
+        raycaster.setFromCamera({ x: 0, y: 0 }, camera);
 
-  const startLoot = randomLoot('purple');
-  state.currentRarity = startLoot.rarity;
-  state.currentName = startLoot.name;
-  state.currentValue = startLoot.value;
+        // 2. 检测射线是否与靶子相交
+        const intersects = raycaster.intersectObjects(targets);
 
-  ravenEl.classList.remove('gone');
-  ravenTauntEl.textContent = '“把东西放下，让我看看你的诚意。”';
-  overlay.classList.remove('show');
+        if (intersects.length > 0) {
+            // 命中
+            shotsHit++;
+            score++;
+            scoreEl.textContent = score;
+            updateAccuracy();
 
-  renderCandles();
-  renderLoot();
-  renderButtons();
-}
+            // 显示击中特效
+            hitMarker.classList.add('active');
+            setTimeout(() => hitMarker.classList.remove('active'), 100);
 
-/* ---------- 事件绑定 ---------- */
-btnFeed.addEventListener('click', feed);
-btnCashout.addEventListener('click', cashout);
-btnNew.addEventListener('click', newRound);
+            // 移除被击中的靶子
+            const hitTarget = intersects[0].object;
+            scene.remove(hitTarget);
+            targets = targets.filter(t => t !== hitTarget);
 
-/* ---------- 启动 ---------- */
-checkAuth();
-newRound();
+            // 马上生成一个新的靶子补充
+            spawnTarget();
+        }
+    }
+
+    // ================= 靶子生成 =================
+    function spawnTarget() {
+        // 随机大小，增加难度层次
+        const radius = Math.random() * 0.3 + 0.4; 
+        
+        const geometry = new THREE.SphereGeometry(radius, 32, 32);
+        
+        // 发光材质
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x2e5bff,
+            emissive: 0x60a5fa,
+            emissiveIntensity: 0.8,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+
+        const sphere = new THREE.Mesh(geometry, material);
+
+        // 生成在玩家前方的半球形空间内
+        // 距离 10 - 20 之间
+        const distance = Math.random() * 10 + 10;
+        // 左右角度 -45度 到 45度
+        const angleY = (Math.random() - 0.5) * Math.PI / 2;
+        // 上下角度 -20度 到 20度
+        const angleX = (Math.random() - 0.5) * 0.8;
+
+        // 计算位置 (基于相机的初始朝向)
+        sphere.position.x = Math.sin(angleY) * Math.cos(angleX) * distance;
+        sphere.position.y = Math.sin(angleX) * distance + 1.6; // +1.6 是视平线高度
+        sphere.position.z = -Math.cos(angleY) * Math.cos(angleX) * distance; // 负数是前方
+
+        scene.add(sphere);
+        targets.push(sphere);
+    }
+
+    // ================= 游戏流程控制 =================
+    function startGame() {
+        // 重置数据
+        score = 0;
+        shotsFired = 0;
+        shotsHit = 0;
+        timeLeft = 30;
+        scoreEl.textContent = score;
+        timeEl.textContent = Math.ceil(timeLeft);
+        updateAccuracy();
+        
+        // 清理场上残留的靶子
+        targets.forEach(t => scene.remove(t));
+        targets = [];
+
+        // 重置视角
+        yaw = 0; pitch = 0;
+        camera.rotation.set(0, 0, 0);
+
+        // 生成初始靶子
+        for (let i = 0; i < 3; i++) {
+            spawnTarget();
+        }
+
+        overlay.classList.add('hidden');
+        crosshair.style.opacity = 1;
+        hud.style.opacity = 1;
+        isPlaying = true;
+
+        // 锁定鼠标
+        renderer.domElement.requestPointerLock();
+
+        // 计时器
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (!isPlaying) return;
+            timeLeft -= 1;
+            timeEl.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+    }
+
+    function endGame() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        document.exitPointerLock(); // 释放鼠标
+        
+        crosshair.style.opacity = 0;
+        hud.style.opacity = 0;
+        
+        // 显示结算
+        overlay.classList.remove('hidden');
+        overlay.querySelector('h1').textContent = '训练结束';
+        overlay.querySelector('p').style.display = 'none';
+        resultStats.style.display = 'flex';
+        finalScoreEl.textContent = score;
+        finalAccuracyEl.textContent = accEl.textContent.replace('准确率: ', '');
+        
+        btnStart.textContent = '再试一次';
+    }
+
+    function updateAccuracy() {
+        if (shotsFired === 0) {
+            accEl.textContent = '准确率: 100%';
+            return;
+        }
+        const acc = Math.round((shotsHit / shotsFired) * 100);
+        accEl.textContent = `准确率: ${acc}%`;
+    }
+
+    // ================= 渲染循环 =================
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // 让靶子有一点呼吸的浮动效果
+        const time = Date.now() * 0.002;
+        targets.forEach((t, index) => {
+            t.position.y += Math.sin(time + index) * 0.002;
+        });
+
+        renderer.render(scene, camera);
+    }
+
+    // 事件绑定
+    btnStart.addEventListener('click', startGame);
+
+    // 启动初始化
+    init();
+    animate();
+
 </script>
 </body>
 </html>

@@ -5,164 +5,348 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>公告📢</title>
 <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   html, body {
-    margin: 0;
-    padding: 0;
-  }
-  
-  body {
+    width: 100%;
+    min-height: 100vh;
     background: #0d0d1a;
-    /* 顶部留出导航栏空间 */
-    padding-top: 100px; 
-    padding-bottom: 80px;
+    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
+    overflow-x: hidden;
   }
 
-  /* --- 统一顶部导航栏 --- */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% 50%, #1c1c20, #0b0b0d 70%);
+    z-index: -1; pointer-events: none;
+  }
+
+  /* ===== 统一顶部导航栏 ===== */
   .topbar {
-    position: fixed; /* 固定在顶部 */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 42px;
+    position: fixed; left: 0; top: 0; width: 100%; height: 42px;
     background: linear-gradient(90deg, rgba(30,58,138,0.6) 0%, rgba(37,99,235,0.7) 50%, rgba(30,58,138,0.6) 100%);
     box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   }
-
   .topbar a {
-    color: #ffffff;
-    text-decoration: none;
-    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 16px;
-    letter-spacing: 0.15em;
-    display: inline-block;
-    transition: transform 0.2s ease; 
+    color: #ffffff; text-decoration: none; font-size: 16px;
+    letter-spacing: 0.15em; transition: transform 0.2s ease;
     text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   }
+  .topbar a:hover { transform: scale(1.15); }
 
-  .topbar a:hover {
-    transform: scale(1.15);
+  /* ===== 主容器 ===== */
+  .container {
+    max-width: 800px;
+    margin: 100px auto 80px; /* 顶部留出导航栏空间 */
+    padding: 0 20px;
+    z-index: 1;
+    position: relative;
   }
 
-  /* --- 文章内容的样式 --- */
-  .article {
-    font-family: "Songti SC", "STSong", "SimSun", "宋体", serif;
-    font-size: 32px; /* 大字号 */
-    color: #ffffff; 
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); 
-    line-height: 1.5;
-    
-    /* 纵向排版 */
+  /* ===== 顶部筛选区 ===== */
+  .filter-bar {
     display: flex;
-    flex-direction: column;
-    gap: 50px; /* 两段文字之间的间距 */
-    
-    /* 整体居中，文字内部靠左 */
-    margin: 0 auto;
-    width: 90%; /* 防止手机端文字贴边 */
-    max-width: 800px; /* 限制最大宽度，大屏幕上更好看 */
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 220, 150, 0.15);
   }
 
-  .post {
+  .filter-title {
+    font-size: 24px;
+    color: #f2ead8;
+    font-family: "ZCOOL KuaiLe", "站酷快乐体", cursive;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  }
+
+  .date-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* 日期选择器（参考天气页下拉框风格） */
+  input[type="date"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 220, 150, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #f2ead8;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  input[type="date"]:hover, input[type="date"]:focus {
+    border-color: rgba(96, 165, 250, 0.8);
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* 让日历图标变成白色 */
+    cursor: pointer;
+  }
+
+  /* 重置按钮 */
+  .btn-reset {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cdbf9e;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-reset:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+  }
+
+  /* ===== 时间线列表 ===== */
+  .timeline {
+    position: relative;
     display: flex;
     flex-direction: column;
+    gap: 20px;
+  }
+
+  /* 时间线垂直线 */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .post-card {
+    display: flex;
     align-items: flex-start;
+    gap: 20px;
+    position: relative;
+    animation: fadeIn 0.4s ease;
   }
 
-  .post .text {
+  /* 日期徽章 */
+  .post-date {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    background: #1c1c20;
+    border: 2px solid rgba(96, 165, 250, 0.5);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.15);
+  }
+  .post-date .month { font-size: 12px; color: #8a8a96; margin-bottom: 2px; }
+  .post-date .day { font-size: 22px; font-weight: bold; color: #60a5fa; line-height: 1; font-family: -apple-system, sans-serif; }
+
+  /* 内容卡片 */
+  .post-content {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+  .post-content:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(96, 165, 250, 0.4);
+    transform: translateX(5px);
+  }
+
+  .post-title {
+    font-size: 20px;
+    color: #f2ead8;
+    font-weight: 600;
     margin-bottom: 10px;
+    letter-spacing: 1px;
   }
 
-  .post .date {
-    font-size: 20px; /* 日期字号小一点 */
-    color: rgba(255, 255, 255, 0.6); 
-    text-shadow: none; 
+  .post-body {
+    font-size: 15px;
+    color: #cdbf9e;
+    line-height: 1.8;
+    white-space: pre-wrap; /* 保留文本内的换行符 */
+  }
+
+  /* 空状态提示 */
+  .empty-state {
+    text-align: center;
+    color: #8a8a96;
+    padding: 60px 0;
+    font-size: 16px;
+    display: none;
+  }
+
+  /* 进入动画 */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 600px) {
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .date-picker-group { justify-content: space-between; }
+    .timeline::before { left: 20px; }
+    .post-date { width: 44px; height: 44px; border-radius: 8px; }
+    .post-date .month { display: none; }
+    .post-date .day { font-size: 18px; }
+    .post-content { padding: 15px; }
+    .post-title { font-size: 17px; }
   }
 </style>
 </head>
 <body>
-  <!-- 统一导航栏 -->
-  <div class="topbar">
-    <a href="index.html">← 返回首页</a>
-  </div>
 
-  <!-- 文章内容 -->
-  <div class="article">
+<!-- 统一导航栏 -->
+<div class="topbar">
+  <a href="index.html">← 返回首页</a>
+</div>
 
-  <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">加入“射精”</div>
-      <div class="date">11.28</div>
-      <div class="text">_________________________________</div>
-    </div>
-    
-    <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">在“解方程”中加入计算器</div>
-      <div class="date">11.25</div>
-      <div class="text">_________________________________</div>
-    </div>
-    
-    <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">英伟达首席执行官黄仁勋在前段时间被</div>
-      <div class="text">剥夺首席执行官职位后重新复职！</div>
-      <div class="date">11.23</div>
-      <div class="text">_________________________________</div>
-    </div>
-    
-    <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">主页更新，加入解方程功能</div>
-      <div class="date">11.22</div>
-      <div class="text">_________________________________</div>
-    </div>
-
-    <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">在导航栏内加入“天气预报”</div>
-      <div class="date">11.15</div>
-      <div class="text">_________________________________</div>
-    </div>
-    
-    <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">开始完善下载功能</div>
-      <div class="date">11.7</div>
-      <div class="text">_________________________________</div>
-    </div>
-    <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">完成公告功能。</div>
-      <div class="text">------------</div>
-      <div class="text">以下是预计更新的内容：</div>
-      <div class="text">1.歌曲（11.15以前）</div>
-      <div class="text">2.聊天社交（预计2027年暑假）</div>
-      <div class="text">3.小游戏（预计2027年寒假）</div>
-      <div class="text">4.ai对话（预计2027年暑假）</div>
-      <div class="text">5.资源下载（2026年12月）</div>
-      <div class="text">6.工具箱toolbox(11月末上线,后续陆续更新）</div>
-      <div class="text">------------</div>
-      <div class="text">大家可以参考上面更新内容，导航栏里会放5个栏目，4个是</div>
-      <div class="text">超链接，其中一个是现在已经有的“公告”，另外一个是一个</div>
-      <div class="text">可下拉栏目“其他”。上述栏目均待定。</div>
-      <div class="text">其余内容持续更新中，不急不急慢慢来^v^……</div>
-      <div class="date">11.01</div>
-      <div class="text">_________________________________</div>
-    </div>
-    
-    <div class="post">
-      <div class="text">_________________________________</div>
-      <div class="text">于2026.10.31开始编辑</div>
-      <div class="date">10.31</div>
-      <div class="text">_________________________________</div>
+<div class="container">
+  
+  <!-- 顶部筛选区 -->
+  <div class="filter-bar">
+    <div class="filter-title">📢 站点公告</div>
+    <div class="date-picker-group">
+      <input type="date" id="datePicker">
+      <button class="btn-reset" id="btnReset">查看全部</button>
     </div>
   </div>
 
+  <!-- 公告列表容器 -->
+  <div class="timeline" id="timeline">
+    <!-- 这里的公告会由 JS 自动渲染出来 -->
+  </div>
+
+  <!-- 空状态 -->
+  <div class="empty-state" id="emptyState">
+    这一天没有发布公告哦，换个日期试试吧～
+  </div>
+
+</div>
+
+<script>
+  // ==========================================
+  // 📝 公告数据源（以后加新公告，只要在这里加一条就行！）
+  // ==========================================
+  const announcements = [
+    {
+      date: "2026-11-25",
+      title: "在“解方程”中加入计算器",
+      content: "更新了 eq.html，增加了唤起系统计算器的功能，并在终端增添了打字机效果。"
+    },
+    {
+      date: "2026-11-23",
+      title: "英伟达首席执行官黄仁勋在前段时间被剥夺首席执行官职位后重新复职！",
+      content: "" // 没有具体内容可以留空
+    },
+    {
+      date: "2026-11-22",
+      title: "主页更新，加入解方程功能",
+      content: "导航栏的“其他”栏目下，现在可以体验解方程工具了。"
+    },
+    {
+      date: "2026-11-15",
+      title: "在导航栏内加入“天气预报”",
+      content: "你可以随时查看上海各区未来14天的天气状况。"
+    },
+    {
+      date: "2026-11-07",
+      title: "开始完善下载功能",
+      content: "download.html 页面支持搜索和在线预览音频/视频。"
+    },
+    {
+      date: "2026-11-01",
+      title: "完成公告功能 & 未来更新计划",
+      content: "以下是预计更新的内容：\n1.歌曲（11.15以前）\n2.聊天社交（预计2027年暑假）\n3.小游戏（预计2027年寒假）\n4.ai对话（预计2027年暑假）\n5.资源下载（2026年12月）\n6.工具箱toolbox(11月末上线)\n\n大家可以参考上面更新内容，导航栏里会放5个栏目...\n其余内容持续更新中，不急不急慢慢来^v^……"
+    },
+    {
+      date: "2026-10-31",
+      title: "于2026.10.31开始编辑",
+      content: "网站正式动工。"
+    }
+  ];
+
+  // 获取 DOM 元素
+  const timeline = document.getElementById('timeline');
+  const emptyState = document.getElementById('emptyState');
+  const datePicker = document.getElementById('datePicker');
+  const btnReset = document.getElementById('btnReset');
+
+  // 将日期字符串转为 月/日 显示
+  function formatDateDisplay(dateStr) {
+    const d = new Date(dateStr);
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    return { month, day };
+  }
+
+  // 渲染公告列表
+  function render(filterDate = '') {
+    timeline.innerHTML = ''; // 清空当前内容
+    let hasData = false;
+
+    announcements.forEach(post => {
+      // 如果选了日期，且不匹配，就跳过
+      if (filterDate && post.date !== filterDate) return;
+
+      hasData = true;
+      const { month, day } = formatDateDisplay(post.date);
+
+      const card = document.createElement('div');
+      card.className = 'post-card';
+      card.innerHTML = `
+        <div class="post-date">
+          <div class="month">${month}月</div>
+          <div class="day">${day}</div>
+        </div>
+        <div class="post-content">
+          <div class="post-title">${post.title}</div>
+          ${post.content ? `<div class="post-body">${post.content}</div>` : ''}
+        </div>
+      `;
+      timeline.appendChild(card);
+    });
+
+    // 处理空状态
+    emptyState.style.display = hasData ? 'none' : 'block';
+  }
+
+  // 监听日期选择
+  datePicker.addEventListener('change', (e) => {
+    render(e.target.value);
+  });
+
+  // 监听重置按钮
+  btnReset.addEventListener('click', () => {
+    datePicker.value = ''; // 清空日期选择器
+    render(); // 重新渲染全部
+  });
+
+  // 页面加载时初始化
+  render();
+
+</script>
 </body>
 </html>

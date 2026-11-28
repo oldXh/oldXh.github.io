@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>3D 定位练习</title>
-    <!-- 引入 Three.js 引擎 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,23 +35,18 @@
 
         /* 游戏画布 */
         #game-container {
-            width: 100vw;
-            height: 100vh;
-            position: absolute;
-            top: 0; left: 0;
-            cursor: none; /* 隐藏默认鼠标，使用自定义准星 */
+            width: 100vw; height: 100vh;
+            position: absolute; top: 0; left: 0;
+            cursor: none;
         }
 
         /* 自定义准星 */
         #crosshair {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 20px; height: 20px;
-            pointer-events: none;
-            z-index: 10;
-            opacity: 0; /* 游戏开始时显示 */
-            transition: opacity 0.3s;
+            pointer-events: none; z-index: 10;
+            opacity: 0; transition: opacity 0.3s;
         }
         #crosshair::before, #crosshair::after {
             content: ''; position: absolute; background: #60a5fa;
@@ -64,15 +58,13 @@
             background: #fff; border-radius: 50%;
         }
 
-        /* HUD 计分板 */
+        /* HUD */
         #hud {
             position: absolute;
             top: 60px; left: 20px; right: 20px;
             display: flex; justify-content: space-between;
-            pointer-events: none;
-            z-index: 10;
-            color: #f2ead8;
-            font-size: 20px;
+            pointer-events: none; z-index: 10;
+            color: #f2ead8; font-size: 20px;
             opacity: 0; transition: opacity 0.3s;
         }
         #hud span { color: #60a5fa; font-weight: bold; font-size: 28px; }
@@ -80,26 +72,72 @@
 
         /* 开始 / 结算 遮罩 */
         #overlay {
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background: rgba(5, 5, 8, 0.85);
             backdrop-filter: blur(8px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            color: #f2ead8;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100; color: #f2ead8;
             transition: opacity 0.3s;
         }
         #overlay.hidden { opacity: 0; pointer-events: none; }
         
         #overlay h1 { font-size: 36px; letter-spacing: 4px; margin-bottom: 10px; }
-        #overlay p { color: #cdbf9e; margin-bottom: 30px; font-size: 16px; letter-spacing: 1px; text-align: center; line-height: 1.6; }
+        #overlay p { color: #cdbf9e; margin-bottom: 20px; font-size: 15px; letter-spacing: 1px; text-align: center; line-height: 1.6; }
         
-        .stats-box {
-            display: flex; gap: 40px; margin-bottom: 30px;
+        /* 灵敏度滑块区域 */
+        .settings {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.03);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .settings label {
+            font-size: 14px;
+            color: #8a8a96;
+            letter-spacing: 1px;
+        }
+        .settings span {
+            color: #60a5fa;
+            font-weight: bold;
+            font-size: 18px;
+            width: 40px;
+            display: inline-block;
             text-align: center;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 200px;
+            background: transparent;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 18px; width: 18px;
+            border-radius: 50%;
+            background: #60a5fa;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(96,165,250,0.5);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .stats-box {
+            display: flex; gap: 40px; margin-bottom: 30px; text-align: center;
         }
         .stats-box div { font-size: 16px; color: #8a8a96; }
         .stats-box strong { display: block; font-size: 32px; color: #60a5fa; margin-top: 5px; }
@@ -110,10 +148,8 @@
             border: 1px solid rgba(96, 165, 250, 0.5);
             color: #60a5fa;
             border-radius: 30px;
-            font-size: 18px;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s;
+            font-size: 18px; letter-spacing: 2px;
+            cursor: pointer; transition: all 0.3s;
             font-family: inherit;
         }
         .btn:hover {
@@ -139,7 +175,6 @@
 </div>
 
 <div id="game-container"></div>
-
 <div id="crosshair"><div class="dot"></div></div>
 <div class="hit-marker" id="hit-marker">×</div>
 
@@ -154,10 +189,21 @@
 <div id="overlay">
     <h1>3D 定位训练</h1>
     <p>移动鼠标控制视角，<strong>点击鼠标左键</strong>射击蓝色靶子。<br>建议使用电脑游玩，移动端体验受限。</p>
+    
+    <!-- 灵敏度调节区域 -->
+    <div class="settings">
+        <label>游戏内鼠标灵敏度</label>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <input type="range" id="sens-slider" min="0.5" max="5.0" step="0.1" value="2.0">
+            <span id="sens-value">2.0</span>
+        </div>
+    </div>
+
     <div id="result-stats" class="stats-box" style="display:none;">
         <div>最终得分<strong id="final-score">0</strong></div>
         <div>命中率<strong id="final-accuracy">0%</strong></div>
     </div>
+    
     <button class="btn" id="btn-start">点击开始</button>
 </div>
 
@@ -176,6 +222,10 @@
     const finalAccuracyEl = document.getElementById('final-accuracy');
     const resultStats = document.getElementById('result-stats');
 
+    // 灵敏度 UI 元素
+    const sensSlider = document.getElementById('sens-slider');
+    const sensValue = document.getElementById('sens-value');
+
     let scene, camera, renderer, raycaster;
     let targets = [];
     let isPlaying = false;
@@ -186,51 +236,57 @@
     let timerInterval;
 
     // 视角控制变量
-    let yaw = 0; // 左右
-    let pitch = 0; // 上下
-    const mouseSensitivity = 0.002;
+    let yaw = 0; let pitch = 0; 
+    
+    // 🔥 灵敏度系统
+    let userSensitivity = parseFloat(localStorage.getItem('aim_sens')) || 2.0;
+    let mouseSensitivity = userSensitivity * 0.001; // 将 0.5-5.0 映射为实际的数学系数
+
     let isLocked = false;
 
     // ================= 初始化 Three.js =================
     function init() {
-        // 1. 场景
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a0a0c);
-        // 添加一点雾效，让远处的靶子有纵深感
         scene.fog = new THREE.FogExp2(0x0a0a0c, 0.02);
 
-        // 2. 相机 (FPS 视角)
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.6, 0); // 视觉高度 1.6m
-        camera.rotation.order = 'YXZ'; // 防止视角翻滚
+        camera.position.set(0, 1.6, 0);
+        camera.rotation.order = 'YXZ';
 
-        // 3. 渲染器
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        // 4. 光线
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
-        
         const dirLight = new THREE.DirectionalLight(0x60a5fa, 1);
         dirLight.position.set(5, 10, 5);
         scene.add(dirLight);
 
-        // 5. 地面网格 (增加空间感，符合你的网站风格)
         const gridHelper = new THREE.GridHelper(100, 100, 0x1c1c20, 0x111116);
         scene.add(gridHelper);
 
-        // 6. 射线检测器 (用于射击判定)
         raycaster = new THREE.Raycaster();
 
-        // 事件监听
         window.addEventListener('resize', onWindowResize);
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mousedown', onMouseDown);
         document.addEventListener('pointerlockchange', onPointerLockChange);
+        
+        // 初始化灵敏度 UI
+        sensSlider.value = userSensitivity;
+        sensValue.textContent = userSensitivity.toFixed(1);
     }
+
+    // ================= 灵敏度事件绑定 =================
+    sensSlider.addEventListener('input', (e) => {
+        userSensitivity = parseFloat(e.target.value);
+        mouseSensitivity = userSensitivity * 0.001;
+        sensValue.textContent = userSensitivity.toFixed(1);
+        localStorage.setItem('aim_sens', userSensitivity); // 保存到本地
+    });
 
     // ================= 尺寸适配 =================
     function onWindowResize() {
@@ -239,16 +295,13 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    // ================= 指针锁定 (FPS 视角核心) =================
+    // ================= 指针锁定 =================
     function onPointerLockChange() {
         if (document.pointerLockElement === renderer.domElement) {
             isLocked = true;
         } else {
             isLocked = false;
-            // 如果游戏正在进行中，但退出了鼠标锁定，则暂停游戏
-            if (isPlaying) {
-                endGame();
-            }
+            if (isPlaying) endGame();
         }
     }
 
@@ -262,136 +315,98 @@
         yaw -= movementX * mouseSensitivity;
         pitch -= movementY * mouseSensitivity;
 
-        // 限制上下视角，防止翻转（约 -85度 到 85度）
         pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
 
         camera.rotation.y = yaw;
         camera.rotation.x = pitch;
     }
 
-    // ================= 射击逻辑 =================
+    // ================= 射击 =================
     function onMouseDown(e) {
-        // 只有左键且处于锁定状态才射击
         if (e.button !== 0 || !isLocked || !isPlaying) return;
 
         shotsFired++;
         updateAccuracy();
 
-        // 1. 设置射线起点和方向为屏幕正中心
         raycaster.setFromCamera({ x: 0, y: 0 }, camera);
-
-        // 2. 检测射线是否与靶子相交
         const intersects = raycaster.intersectObjects(targets);
 
         if (intersects.length > 0) {
-            // 命中
             shotsHit++;
             score++;
             scoreEl.textContent = score;
             updateAccuracy();
 
-            // 显示击中特效
             hitMarker.classList.add('active');
             setTimeout(() => hitMarker.classList.remove('active'), 100);
 
-            // 移除被击中的靶子
             const hitTarget = intersects[0].object;
             scene.remove(hitTarget);
             targets = targets.filter(t => t !== hitTarget);
 
-            // 马上生成一个新的靶子补充
             spawnTarget();
         }
     }
 
     // ================= 靶子生成 =================
     function spawnTarget() {
-        // 随机大小，增加难度层次
         const radius = Math.random() * 0.3 + 0.4; 
-        
         const geometry = new THREE.SphereGeometry(radius, 32, 32);
-        
-        // 发光材质
         const material = new THREE.MeshStandardMaterial({
-            color: 0x2e5bff,
-            emissive: 0x60a5fa,
-            emissiveIntensity: 0.8,
-            roughness: 0.2,
-            metalness: 0.8
+            color: 0x2e5bff, emissive: 0x60a5fa, emissiveIntensity: 0.8, roughness: 0.2, metalness: 0.8
         });
-
         const sphere = new THREE.Mesh(geometry, material);
 
-        // 生成在玩家前方的半球形空间内
-        // 距离 10 - 20 之间
         const distance = Math.random() * 10 + 10;
-        // 左右角度 -45度 到 45度
         const angleY = (Math.random() - 0.5) * Math.PI / 2;
-        // 上下角度 -20度 到 20度
         const angleX = (Math.random() - 0.5) * 0.8;
 
-        // 计算位置 (基于相机的初始朝向)
         sphere.position.x = Math.sin(angleY) * Math.cos(angleX) * distance;
-        sphere.position.y = Math.sin(angleX) * distance + 1.6; // +1.6 是视平线高度
-        sphere.position.z = -Math.cos(angleY) * Math.cos(angleX) * distance; // 负数是前方
+        sphere.position.y = Math.sin(angleX) * distance + 1.6;
+        sphere.position.z = -Math.cos(angleY) * Math.cos(angleX) * distance;
 
         scene.add(sphere);
         targets.push(sphere);
     }
 
-    // ================= 游戏流程控制 =================
+    // ================= 游戏流程 =================
     function startGame() {
-        // 重置数据
-        score = 0;
-        shotsFired = 0;
-        shotsHit = 0;
-        timeLeft = 30;
+        score = 0; shotsFired = 0; shotsHit = 0; timeLeft = 30;
         scoreEl.textContent = score;
         timeEl.textContent = Math.ceil(timeLeft);
         updateAccuracy();
         
-        // 清理场上残留的靶子
         targets.forEach(t => scene.remove(t));
         targets = [];
-
-        // 重置视角
         yaw = 0; pitch = 0;
         camera.rotation.set(0, 0, 0);
 
-        // 生成初始靶子
-        for (let i = 0; i < 3; i++) {
-            spawnTarget();
-        }
+        for (let i = 0; i < 3; i++) spawnTarget();
 
         overlay.classList.add('hidden');
         crosshair.style.opacity = 1;
         hud.style.opacity = 1;
         isPlaying = true;
 
-        // 锁定鼠标
         renderer.domElement.requestPointerLock();
 
-        // 计时器
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             if (!isPlaying) return;
             timeLeft -= 1;
             timeEl.textContent = timeLeft;
-            if (timeLeft <= 0) {
-                endGame();
-            }
+            if (timeLeft <= 0) endGame();
         }, 1000);
     }
 
     function endGame() {
         isPlaying = false;
         clearInterval(timerInterval);
-        document.exitPointerLock(); // 释放鼠标
+        document.exitPointerLock();
         
         crosshair.style.opacity = 0;
         hud.style.opacity = 0;
         
-        // 显示结算
         overlay.classList.remove('hidden');
         overlay.querySelector('h1').textContent = '训练结束';
         overlay.querySelector('p').style.display = 'none';
@@ -403,34 +418,23 @@
     }
 
     function updateAccuracy() {
-        if (shotsFired === 0) {
-            accEl.textContent = '准确率: 100%';
-            return;
-        }
+        if (shotsFired === 0) { accEl.textContent = '准确率: 100%'; return; }
         const acc = Math.round((shotsHit / shotsFired) * 100);
         accEl.textContent = `准确率: ${acc}%`;
     }
 
-    // ================= 渲染循环 =================
     function animate() {
         requestAnimationFrame(animate);
-        
-        // 让靶子有一点呼吸的浮动效果
         const time = Date.now() * 0.002;
         targets.forEach((t, index) => {
             t.position.y += Math.sin(time + index) * 0.002;
         });
-
         renderer.render(scene, camera);
     }
 
-    // 事件绑定
     btnStart.addEventListener('click', startGame);
-
-    // 启动初始化
     init();
     animate();
-
 </script>
 </body>
 </html>

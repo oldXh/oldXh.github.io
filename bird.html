@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D 定位练习</title>
+    <title>3D 定位练习 - Aim Trainer Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,8 +12,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             user-select: none;
         }
-
-        /* 统一导航栏 */
         .topbar {
             position: fixed; left: 0; top: 0; width: 100%; height: 42px;
             background: linear-gradient(90deg, rgba(30,58,138,0.6) 0%, rgba(37,99,235,0.7) 50%, rgba(30,58,138,0.6) 100%);
@@ -28,10 +26,7 @@
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
         .topbar a:hover { transform: scale(1.15); }
-
         #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; cursor: none; }
-
-        /* 自定义准星 */
         #crosshair {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -43,8 +38,6 @@
         #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
         #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
         #crosshair .dot { position: absolute; top: 8px; left: 8px; width: 4px; height: 4px; background: #fff; border-radius: 50%; }
-
-        /* HUD */
         #hud {
             position: absolute; top: 60px; left: 20px; right: 20px;
             display: flex; justify-content: space-between;
@@ -54,8 +47,6 @@
         }
         #hud span { color: #60a5fa; font-weight: bold; font-size: 28px; }
         #accuracy { font-size: 14px; color: #cdbf9e; margin-top: 5px;}
-
-        /* 设置遮罩 */
         #overlay {
             position: absolute; inset: 0;
             background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(8px);
@@ -64,11 +55,8 @@
             z-index: 100; color: #f2ead8; transition: opacity 0.3s;
         }
         #overlay.hidden { opacity: 0; pointer-events: none; }
-        
         #overlay h1 { font-size: 36px; letter-spacing: 4px; margin-bottom: 10px; }
         #overlay p { color: #cdbf9e; margin-bottom: 20px; font-size: 15px; letter-spacing: 1px; text-align: center; line-height: 1.6; }
-        
-        /* 设置面板 */
         .settings-panel {
             display: flex; gap: 30px; margin-bottom: 30px;
             background: rgba(255,255,255,0.03);
@@ -78,8 +66,6 @@
         .setting-item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .setting-item label { font-size: 14px; color: #8a8a96; letter-spacing: 1px; }
         .setting-item span { color: #60a5fa; font-weight: bold; font-size: 16px; }
-
-        /* 天气页同款下拉框 */
         .select-wrapper { position: relative; display: inline-block; }
         .select-wrapper::after {
             content: '▼'; font-size: 10px; color: #cdbf9e;
@@ -95,23 +81,17 @@
         }
         select:hover, select:focus { border-color: rgba(96, 165, 250, 0.8); box-shadow: 0 0 15px rgba(96, 165, 250, 0.3); }
         select option { background: #1c1c20; color: #f2ead8; }
-
-        /* 滑块 */
         input[type=range] { -webkit-appearance: none; width: 150px; background: transparent; }
         input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px;
-        }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; }
         input[type=range]::-webkit-slider-thumb {
             height: 18px; width: 18px; border-radius: 50%; background: #60a5fa;
             cursor: pointer; -webkit-appearance: none; margin-top: -6px;
             box-shadow: 0 0 10px rgba(96,165,250,0.5);
         }
-
         .stats-box { display: flex; gap: 40px; margin-bottom: 30px; text-align: center; }
         .stats-box div { font-size: 16px; color: #8a8a96; }
         .stats-box strong { display: block; font-size: 32px; color: #60a5fa; margin-top: 5px; }
-
         .btn {
             padding: 14px 48px; background: rgba(37, 99, 235, 0.2);
             border: 1px solid rgba(96, 165, 250, 0.5); color: #60a5fa;
@@ -119,7 +99,6 @@
             cursor: pointer; transition: all 0.3s; font-family: inherit;
         }
         .btn:hover { background: rgba(37, 99, 235, 0.5); color: #fff; box-shadow: 0 0 20px rgba(96, 165, 250, 0.4); }
-
         .hit-marker {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(1);
@@ -149,7 +128,6 @@
     <h1>3D 定位训练</h1>
     <p>移动鼠标控制视角，<strong>点击左键</strong>射击蓝色靶子。<br>建议使用电脑游玩。</p>
     
-    <!-- 设置面板 -->
     <div class="settings-panel">
         <div class="setting-item">
             <label>鼠标灵敏度</label>
@@ -178,7 +156,6 @@
 </div>
 
 <script>
-    // ================= 基础变量 =================
     const container = document.getElementById('game-container');
     const overlay = document.getElementById('overlay');
     const btnStart = document.getElementById('btn-start');
@@ -191,7 +168,6 @@
     const finalScoreEl = document.getElementById('final-score');
     const finalAccuracyEl = document.getElementById('final-accuracy');
     const resultStats = document.getElementById('result-stats');
-
     const sensSlider = document.getElementById('sens-slider');
     const sensValue = document.getElementById('sens-value');
     const gunSelect = document.getElementById('gun-select');
@@ -202,19 +178,22 @@
     let score = 0, shotsFired = 0, shotsHit = 0, timeLeft = 30;
     let timerInterval;
 
-    // 视角控制
     let yaw = 0, pitch = 0; 
     let userSensitivity = parseFloat(localStorage.getItem('aim_sens')) || 2.0;
     let mouseSensitivity = userSensitivity * 0.001;
     let isLocked = false;
 
-    // 武器模型与动视
+    // 武器视图组
     let viewModelGroup = new THREE.Group();
     let currentGunMesh = null;
-    let recoilOffset = 0; // 后坐力变量
-    let bobTime = 0; // 摇摆时间
+    
+    // 动效参数
+    let bobTime = 0;
+    let recoilOffset = 0;
+    // 基础位置（靠右下角）
+    const BASE_POS = { x: 0.25, y: -0.22, z: -0.5 }; 
+    const BASE_ROT = { x: 0.05, y: -0.1, z: 0 };
 
-    // ================= 初始化 =================
     function init() {
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a0a0c);
@@ -224,8 +203,9 @@
         camera.position.set(0, 1.6, 0);
         camera.rotation.order = 'YXZ';
         
-        // 把第一人称模型组挂载到相机上
         camera.add(viewModelGroup);
+        viewModelGroup.position.set(BASE_POS.x, BASE_POS.y, BASE_POS.z);
+        viewModelGroup.rotation.set(BASE_ROT.x, BASE_ROT.y, BASE_ROT.z);
         scene.add(camera); 
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -234,13 +214,14 @@
         container.appendChild(renderer.domElement);
 
         // 灯光
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
+        
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(2, 5, 3);
-        camera.add(dirLight); // 将光源也绑在相机上，这样枪械永远明亮
-        scene.add(new THREE.DirectionalLight(0x60a5fa, 0.4)).position.set(-5, 5, -5);
+        dirLight.position.set(1, 2, 1);
+        camera.add(dirLight); // 跟随相机的光，保证枪械永远明亮
 
+        // 靶场网格
         const gridHelper = new THREE.GridHelper(100, 100, 0x1c1c20, 0x111116);
         scene.add(gridHelper);
 
@@ -251,159 +232,156 @@
         document.addEventListener('mousedown', onMouseDown);
         document.addEventListener('pointerlockchange', onPointerLockChange);
         
-        // UI 初始化
         sensSlider.value = userSensitivity;
         sensValue.textContent = userSensitivity.toFixed(1);
         
-        // 初始装备
         switchGun(gunSelect.value);
     }
 
-    // ================= 武器模型构建 =================
-
-    // 材质库
-    const matSkin = new THREE.MeshStandardMaterial({ color: 0xffdcdb, roughness: 0.4, metalness: 0.1 }); // 少女肤色
-    const matNail = new THREE.MeshStandardMaterial({ color: 0xffb6c1, roughness: 0.2 }); // 粉色指甲油
-    const matGunBlack = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.8 });
-    const matGunWood = new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.7, metalness: 0.1 });
-    const matGunWhite = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.3, metalness: 0.6 });
+    // ================= 材质定义 =================
+    const matSkin = new THREE.MeshStandardMaterial({ color: 0xffe4e1, roughness: 0.4, metalness: 0.05 }); // 少女肤色
+    const matNail = new THREE.MeshStandardMaterial({ color: 0xffb6c1, roughness: 0.1, metalness: 0.2 }); // 指甲油
+    const matGunBlack = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
+    const matGunWood = new THREE.MeshStandardMaterial({ color: 0x6b3e1b, roughness: 0.7, metalness: 0.1 });
+    const matGunWhite = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.2, metalness: 0.7 });
     const matGunGold = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.3, metalness: 0.9 });
-    const matGunBlue = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x0055ff, emissiveIntensity: 0.8 }); // 戍卫发光条
+    const matGunGlow = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00aaff, emissiveIntensity: 1.5 });
 
-    // 辅助函数：创建圆柱体
-    function createCylinder(rTop, rBottom, height, material, rotation=[0,0,0], pos=[0,0,0]) {
-        const geo = new THREE.CylinderGeometry(rTop, rBottom, height, 16);
-        const mesh = new THREE.Mesh(geo, material);
-        mesh.rotation.set(...rotation);
-        mesh.position.set(...pos);
-        return mesh;
-    }
-    // 辅助函数：创建方块
+    // ================= 辅助建模函数 =================
     function createBox(w, h, d, material, pos=[0,0,0], rot=[0,0,0]) {
-        const geo = new THREE.BoxGeometry(w, h, d);
-        const mesh = new THREE.Mesh(geo, material);
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
         mesh.position.set(...pos);
         mesh.rotation.set(...rot);
         return mesh;
     }
-    // 辅助函数：创建二次元手指
-    function createFinger(pos, rot, length=0.08) {
-        const fingerGroup = new THREE.Group();
-        const segment1 = createCylinder(0.015, 0.015, length, matSkin, [0,0,0], [0, length/2, 0]);
-        const segment2 = createCylinder(0.013, 0.013, length*0.8, matSkin, [0.4,0,0], [0, length+0.02, 0]); // 弯曲
-        const nail = createBox(0.015, 0.02, 0.01, matNail, [0, length*1.8+0.04, 0.01], [0.4,0,0]);
-        fingerGroup.add(segment1, segment2, nail);
-        fingerGroup.position.set(...pos);
-        fingerGroup.rotation.set(...rot);
-        return fingerGroup;
+    function createCylinder(rTop, rBottom, height, material, pos=[0,0,0], rot=[0,0,0]) {
+        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBottom, height, 16), material);
+        mesh.position.set(...pos);
+        mesh.rotation.set(...rot);
+        return mesh;
     }
 
-    // 构建 AK47 + 手模
+    // ================= 构建右手 (握把) =================
+    function buildRightHand(gripPos, gripRot) {
+        const handGroup = new THREE.Group();
+        
+        // 手腕与手背
+        const wrist = createCylinder(0.03, 0.04, 0.15, matSkin, [0, -0.08, 0.05], [Math.PI/4, 0, 0]);
+        const palm = createBox(0.06, 0.08, 0.05, matSkin, [0, 0, 0]);
+        handGroup.add(wrist, palm);
+
+        // 手指 (环绕握把)
+        for(let i=0; i<4; i++) {
+            const finger = createCylinder(0.012, 0.012, 0.06, matSkin, [0.02, -0.02 - i*0.018, -0.02], [0, 0, -0.6]);
+            const nail = createBox(0.012, 0.012, 0.01, matNail, [0.04, -0.02 - i*0.018, -0.02], [0, 0, -0.6]);
+            handGroup.add(finger, nail);
+        }
+        // 大拇指
+        const thumb = createCylinder(0.014, 0.014, 0.05, matSkin, [-0.03, 0.02, -0.01], [0, 0, 0.8]);
+        handGroup.add(thumb);
+
+        handGroup.position.set(...gripPos);
+        handGroup.rotation.set(...gripRot);
+        return handGroup;
+    }
+
+    // ================= 构建左手 (托护木) =================
+    function buildLeftHand(foregripPos, foregripRot) {
+        const handGroup = new THREE.Group();
+        
+        const wrist = createCylinder(0.03, 0.04, 0.2, matSkin, [0, -0.1, 0.1], [Math.PI/3, 0.5, 0]);
+        const palm = createBox(0.05, 0.06, 0.07, matSkin, [0, 0, 0]);
+        handGroup.add(wrist, palm);
+
+        // 手指 (平铺托住)
+        for(let i=0; i<4; i++) {
+            const finger = createCylinder(0.011, 0.011, 0.06, matSkin, [0.02, 0, -0.03 + i*0.02], [Math.PI/2, 0, 0]);
+            const nail = createBox(0.01, 0.01, 0.012, matNail, [0.02, 0, -0.06 + i*0.02], [Math.PI/2, 0, 0]);
+            handGroup.add(finger, nail);
+        }
+
+        handGroup.position.set(...foregripPos);
+        handGroup.rotation.set(...foregripRot);
+        return handGroup;
+    }
+
+    // ================= 构建 AK47 =================
     function buildAK47() {
         const group = new THREE.Group();
         
-        // --- 枪体 ---
-        const receiver = createBox(0.04, 0.06, 0.3, matGunBlack, [0, 0, 0]);
-        const barrel = createCylinder(0.008, 0.008, 0.35, matGunBlack, [Math.PI/2, 0, 0], [0, 0.01, -0.3]);
-        const handguard = createCylinder(0.018, 0.018, 0.18, matGunWood, [Math.PI/2, 0, 0], [0, -0.01, -0.2]);
-        const mag = createBox(0.03, 0.15, 0.08, matGunBlack, [0, -0.1, -0.05], [0.4, 0, 0]);
-        const stock = createBox(0.03, 0.05, 0.2, matGunWood, [0, -0.01, 0.25], [0.1, 0, 0]);
-        const sight = createBox(0.01, 0.03, 0.02, matGunBlack, [0, 0.04, -0.1]);
-        
-        group.add(receiver, barrel, handguard, mag, stock, sight);
+        // 枪体核心
+        const receiver = createBox(0.05, 0.08, 0.3, matGunBlack, [0, 0, 0]);
+        // 枪管
+        const barrel = createCylinder(0.012, 0.012, 0.4, matGunBlack, [0, 0.02, -0.35], [Math.PI/2, 0, 0]);
+        // 导气管
+        const gasTube = createCylinder(0.01, 0.01, 0.2, matGunBlack, [0, 0.05, -0.2], [Math.PI/2, 0, 0]);
+        // 木质护木
+        const handguard = createBox(0.045, 0.05, 0.15, matGunWood, [0, 0.01, -0.18]);
+        // 弯曲弹匣 (用几个方块错位模拟)
+        const mag1 = createBox(0.035, 0.1, 0.06, matGunBlack, [0, -0.08, 0.02], [0.2, 0, 0]);
+        const mag2 = createBox(0.035, 0.1, 0.06, matGunBlack, [0, -0.16, 0.06], [0.5, 0, 0]);
+        // 木质枪托
+        const stock = createBox(0.04, 0.06, 0.2, matGunWood, [0, -0.02, 0.22]);
+        // 照门/准星
+        const sight = createBox(0.015, 0.03, 0.02, matGunBlack, [0, 0.06, -0.1]);
 
-        // --- 二次元手模 ---
-        // 右手（握把处）
-        const rightHand = new THREE.Group();
-        const rPalm = createBox(0.04, 0.08, 0.05, matSkin, [0, -0.06, 0.05]);
-        rightHand.add(rPalm);
-        // 右手手指
-        rightHand.add(createFinger([0.015, -0.04, 0.05], [0, 0, -0.5])); // 食指
-        rightHand.add(createFinger([0.01, -0.08, 0.05], [0.2, 0, -0.2])); // 中指
-        rightHand.add(createFinger([-0.01, -0.08, 0.05], [0.2, 0, 0]));   // 无名指
-        rightHand.add(createFinger([-0.02, -0.07, 0.05], [0.2, 0, 0.2])); // 小指
+        group.add(receiver, barrel, gasTube, handguard, mag1, mag2, stock, sight);
 
-        // 左手（托护木处）
-        const leftHand = new THREE.Group();
-        const lPalm = createBox(0.04, 0.06, 0.06, matSkin, [0, -0.03, -0.2]);
-        leftHand.add(lPalm);
-        // 左手手指（环绕护木）
-        leftHand.add(createFinger([0.02, 0, -0.22], [0, 0, -1.2]));
-        leftHand.add(createFinger([0.02, 0, -0.19], [0, 0, -1.2]));
-        leftHand.add(createFinger([-0.02, -0.02, -0.22], [0.2, 0, 1.2]));
+        // 装配手模
+        // 右手握把 (机匣后方下方)
+        group.add(buildRightHand([0, -0.08, 0.1], [0, 0, 0]));
+        // 左手托护木 (木制部分下方)
+        group.add(buildLeftHand([0, -0.05, -0.18], [0, 0, 0]));
 
-        group.add(rightHand, leftHand);
-
-        // 调整整体位置（屏幕右下方）
-        group.position.set(0.18, -0.18, -0.4);
-        group.rotation.set(0.05, -0.1, 0);
         return group;
     }
 
-    // 构建 戍卫 (Valorant Guardian) + 手模
+    // ================= 构建 戍卫 (Guardian) =================
     function buildGuardian() {
         const group = new THREE.Group();
         
-        // --- 枪体 ---
-        // 主体（白色流线型拼接）
-        const bodyMain = createBox(0.06, 0.08, 0.4, matGunWhite, [0, 0, 0]);
-        const bodyFront = createBox(0.05, 0.05, 0.2, matGunWhite, [0, 0.01, -0.3]);
-        const barrel = createCylinder(0.01, 0.01, 0.25, matGunBlack, [Math.PI/2, 0, 0], [0, 0.01, -0.45]);
+        // 主体 (拼接白色的模块)
+        const bodyBack = createBox(0.06, 0.09, 0.15, matGunWhite, [0, 0, 0.1]);
+        const bodyMid = createBox(0.055, 0.08, 0.2, matGunBlack, [0, 0, -0.08]);
+        const bodyFront = createBox(0.06, 0.07, 0.15, matGunWhite, [0, 0, -0.25]);
+        
+        // 枪管
+        const barrel = createCylinder(0.01, 0.01, 0.25, matGunBlack, [0, 0.01, -0.4], [Math.PI/2, 0, 0]);
+        
         // 瞄准镜
-        const scopeBase = createBox(0.03, 0.03, 0.15, matGunBlack, [0, 0.06, 0]);
-        const scope = createCylinder(0.025, 0.025, 0.15, matGunBlack, [Math.PI/2, 0, 0], [0, 0.08, 0]);
-        // 金色与发光点缀
-        const goldAccent = createBox(0.065, 0.02, 0.1, matGunGold, [0, 0.02, -0.1]);
-        const blueGlow = createBox(0.062, 0.01, 0.25, matGunBlue, [0, -0.02, 0]);
+        const scopeBase = createBox(0.03, 0.03, 0.15, matGunBlack, [0, 0.06, -0.05]);
+        const scope = createCylinder(0.025, 0.025, 0.15, matGunBlack, [0, 0.08, -0.05], [Math.PI/2, 0, 0]);
+        const scopeLens = createCylinder(0.02, 0.02, 0.01, matGunGlow, [0, 0.08, -0.12], [Math.PI/2, 0, 0]);
+
+        // 侧边发光条与金色点缀
+        const glowStripL = createBox(0.005, 0.02, 0.15, matGunGlow, [0.032, 0, -0.08]);
+        const glowStripR = createBox(0.005, 0.02, 0.15, matGunGlow, [-0.032, 0, -0.08]);
+        const goldAccent = createBox(0.065, 0.02, 0.08, matGunGold, [0, -0.01, -0.1]);
+
         // 弹匣
-        const mag = createBox(0.04, 0.12, 0.06, matGunBlack, [0, -0.08, -0.05], [0.2, 0, 0]);
+        const mag = createBox(0.035, 0.1, 0.06, matGunBlack, [0, -0.08, -0.02], [0.1, 0, 0]);
 
-        group.add(bodyMain, bodyFront, barrel, scopeBase, scope, goldAccent, blueGlow, mag);
+        group.add(bodyBack, bodyMid, bodyFront, barrel, scopeBase, scope, scopeLens, glowStripL, glowStripR, goldAccent, mag);
 
-        // --- 二次元手模 ---
-        // 右手
-        const rightHand = new THREE.Group();
-        const rPalm = createBox(0.04, 0.08, 0.05, matSkin, [0, -0.06, 0.08]);
-        rightHand.add(rPalm);
-        rightHand.add(createFinger([0.015, -0.04, 0.08], [0, 0, -0.5]));
-        rightHand.add(createFinger([0.01, -0.08, 0.08], [0.2, 0, -0.2]));
-        rightHand.add(createFinger([-0.01, -0.08, 0.08], [0.2, 0, 0]));
-        rightHand.add(createFinger([-0.02, -0.07, 0.08], [0.2, 0, 0.2]));
+        // 装配手模
+        // 右手握把
+        group.add(buildRightHand([0, -0.08, 0.1], [0, 0, 0]));
+        // 左手托护木
+        group.add(buildLeftHand([0, -0.05, -0.25], [0, 0, 0]));
 
-        // 左手（托前部）
-        const leftHand = new THREE.Group();
-        const lPalm = createBox(0.04, 0.06, 0.06, matSkin, [0, -0.03, -0.25]);
-        leftHand.add(lPalm);
-        leftHand.add(createFinger([0.02, 0, -0.27], [0, 0, -1.2]));
-        leftHand.add(createFinger([0.02, 0, -0.23], [0, 0, -1.2]));
-        leftHand.add(createFinger([-0.02, -0.02, -0.27], [0.2, 0, 1.2]));
-
-        group.add(rightHand, leftHand);
-
-        // 调整整体位置（不同枪大小不同，稍微调一下）
-        group.position.set(0.2, -0.18, -0.45);
-        group.rotation.set(0.05, -0.15, 0.02);
         return group;
     }
 
-    // 切换枪械逻辑
     function switchGun(type) {
-        if (currentGunMesh) {
-            viewModelGroup.remove(currentGunMesh);
-        }
-        if (type === 'ak47') {
-            currentGunMesh = buildAK47();
-        } else if (type === 'guardian') {
-            currentGunMesh = buildGuardian();
-        }
+        if (currentGunMesh) viewModelGroup.remove(currentGunMesh);
+        currentGunMesh = (type === 'ak47') ? buildAK47() : buildGuardian();
+        // 统一缩放比例，防止太占屏幕
+        currentGunMesh.scale.set(0.8, 0.8, 0.8); 
         viewModelGroup.add(currentGunMesh);
     }
 
-    gunSelect.addEventListener('change', (e) => {
-        switchGun(e.target.value);
-    });
-
     // ================= 交互控制 =================
+    gunSelect.addEventListener('change', (e) => switchGun(e.target.value));
     sensSlider.addEventListener('input', (e) => {
         userSensitivity = parseFloat(e.target.value);
         mouseSensitivity = userSensitivity * 0.001;
@@ -416,16 +394,10 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
-
     function onPointerLockChange() {
-        if (document.pointerLockElement === renderer.domElement) {
-            isLocked = true;
-        } else {
-            isLocked = false;
-            if (isPlaying) endGame();
-        }
+        if (document.pointerLockElement === renderer.domElement) isLocked = true;
+        else { isLocked = false; if (isPlaying) endGame(); }
     }
-
     function onMouseMove(e) {
         if (!isLocked || !isPlaying) return;
         yaw -= (e.movementX || 0) * mouseSensitivity;
@@ -434,17 +406,12 @@
         camera.rotation.y = yaw;
         camera.rotation.x = pitch;
     }
-
     function onMouseDown(e) {
         if (e.button !== 0 || !isLocked || !isPlaying) return;
-
-        // 触发后坐力效果
-        recoilOffset = 0.08; 
-
+        recoilOffset = 0.05; // 开火后退距离
         shotsFired++;
         updateAccuracy();
 
-        // 射击从屏幕正中心发出
         raycaster.setFromCamera({ x: 0, y: 0 }, camera);
         const intersects = raycaster.intersectObjects(targets);
 
@@ -453,10 +420,8 @@
             score++;
             scoreEl.textContent = score;
             updateAccuracy();
-
             hitMarker.classList.add('active');
             setTimeout(() => hitMarker.classList.remove('active'), 100);
-
             const hitTarget = intersects[0].object;
             scene.remove(hitTarget);
             targets = targets.filter(t => t !== hitTarget);
@@ -475,11 +440,9 @@
         const distance = Math.random() * 10 + 10;
         const angleY = (Math.random() - 0.5) * Math.PI / 2;
         const angleX = (Math.random() - 0.5) * 0.8;
-
         sphere.position.x = Math.sin(angleY) * Math.cos(angleX) * distance;
         sphere.position.y = Math.sin(angleX) * distance + 1.6;
         sphere.position.z = -Math.cos(angleY) * Math.cos(angleX) * distance;
-
         scene.add(sphere);
         targets.push(sphere);
     }
@@ -488,20 +451,15 @@
         score = 0; shotsFired = 0; shotsHit = 0; timeLeft = 30;
         scoreEl.textContent = score; timeEl.textContent = Math.ceil(timeLeft);
         updateAccuracy();
-        
         targets.forEach(t => scene.remove(t));
         targets = [];
         yaw = 0; pitch = 0; camera.rotation.set(0, 0, 0);
-
         for (let i = 0; i < 3; i++) spawnTarget();
-
         overlay.classList.add('hidden');
         crosshair.style.opacity = 1;
         hud.style.opacity = 1;
         isPlaying = true;
-
         renderer.domElement.requestPointerLock();
-
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             if (!isPlaying) return;
@@ -516,7 +474,6 @@
         clearInterval(timerInterval);
         document.exitPointerLock();
         crosshair.style.opacity = 0; hud.style.opacity = 0;
-        
         overlay.classList.remove('hidden');
         overlay.querySelector('h1').textContent = '训练结束';
         overlay.querySelector('p').style.display = 'none';
@@ -532,37 +489,32 @@
         accEl.textContent = `准确率: ${acc}%`;
     }
 
-    // ================= 渲染与动视 =================
+    // ================= 渲染与动效 =================
     function animate() {
         requestAnimationFrame(animate);
         
         // 靶子浮动
         const time = Date.now() * 0.002;
-        targets.forEach((t, index) => {
-            t.position.y += Math.sin(time + index) * 0.002;
-        });
+        targets.forEach((t, index) => { t.position.y += Math.sin(time + index) * 0.002; });
 
-        // 枪械动视（Bob 与 后坐力）
+        // 枪械动效
         if (isPlaying && currentGunMesh) {
-            // 1. 呼吸摇摆 (Sway)
             bobTime += 0.05;
-            // 只有移动视角时（这里简化为一直有轻微摇摆）产生动态
-            const swayX = Math.sin(bobTime) * 0.003;
-            const swayY = Math.cos(bobTime * 2) * 0.003;
+            // 呼吸摇摆
+            const swayX = Math.sin(bobTime) * 0.002;
+            const swayY = Math.cos(bobTime * 2) * 0.002;
             
-            // 2. 后坐力 (Recoil) 平滑恢复
-            recoilOffset = THREE.MathUtils.lerp(recoilOffset, 0, 0.1);
+            // 后坐力平滑恢复
+            recoilOffset = THREE.MathUtils.lerp(recoilOffset, 0, 0.15);
 
-            // 3. 应用到模型组（基础位置 + 动效偏移）
-            const basePos = currentGunMesh.userData.basePos || {x: currentGunMesh.position.x, y: currentGunMesh.position.y, z: currentGunMesh.position.z};
+            // 应用位置偏移：基础位置 + 摇摆 + 后坐力
+            viewModelGroup.position.x = BASE_POS.x + swayX;
+            viewModelGroup.position.y = BASE_POS.y + swayY;
+            // 后坐力往后退（Z轴正向移动是靠近相机，这里设置z偏移）
+            viewModelGroup.position.z = BASE_POS.z + recoilOffset;
             
-            viewModelGroup.position.x = basePos.x + swayX;
-            viewModelGroup.position.y = basePos.y + swayY;
-            // 后坐力主要作用在 Z 轴（往后退）
-            viewModelGroup.position.z = basePos.z + recoilOffset;
-            
-            // 后坐力带来的轻微上跳旋转
-            viewModelGroup.rotation.x = 0.05 + recoilOffset * 2;
+            // 应用旋转偏移：枪口上跳
+            viewModelGroup.rotation.x = BASE_ROT.x + recoilOffset * 3;
         }
 
         renderer.render(scene, camera);
